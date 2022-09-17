@@ -75,13 +75,13 @@ Physics of point particles
 - [x] Write core class data structures
 - [x] Implement Euler method for 2nd order ODEs
 - [x] Write core evolution code
-- [] Document everything up to this point
-- [] Implement logger
-- [] Write state recorder / basic I/O code
-- [] Implement constraint forces
-- [] Implement Runge-Kutta method for 2nd order ODEs
-- [] Document everything up to this point
-- [] Write tests
+- [ ] Document everything up to this point
+- [ ] Implement logger
+- [ ] Write state recorder / basic I/O code
+- [ ] Implement constraint forces
+- [ ] Implement Runge-Kutta method for 2nd order ODEs
+- [ ] Document everything up to this point
+- [ ] Write tests
 
 ### Phase 2 - Physics core: part 2(Bodies)
 Physics of non-point bodies
