@@ -1,0 +1,14 @@
+To debug with g++ you need to create launch.json tasks.json folder. 
+To get dependencies to work
+you need to add -I. to two spots in these folders so it looks like this
+launch.json
+"args": ["-I."],
+tasks.json
+          	"args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-I."
+            ], 
