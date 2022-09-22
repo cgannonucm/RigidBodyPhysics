@@ -1,11 +1,8 @@
 #ifndef FORCE_H // include guard
 #define FORCE_H
 
-
-#include "series.h"
-#include "particle.h"
-
-using namespace physics;
+#include <Eigen/Eigen/Dense>
+#include <particle.h>
 
 namespace physics{
     
@@ -18,10 +15,10 @@ namespace physics{
             /**
              * @brief Get force applied on given particle
              * 
-             * @param p1 The particle the force is being applied to
+             * @param p The particle the force is being applied to
              * @return Vector3d The force applied to given particle
              */
-            virtual Vector3d get_force(Particle *p1) = 0;
+            virtual Eigen :: Vector3d get_force(Particle p) = 0;
     };
 
     /**
@@ -42,14 +39,14 @@ namespace physics{
              * @brief The direction of the gravitational force
              * 
              */
-            Vector3d acel;
+            Eigen :: Vector3d acel;
 
             /**
              * @brief Construct a gravitational force with a aceleration vector
              * 
              * @param dir 
              */
-            ForceGravity(Vector3d aceleration){
+            ForceGravity(Eigen :: Vector3d aceleration){
                 acel = aceleration;
             }
 
@@ -58,16 +55,16 @@ namespace physics{
              * 
              */
             ForceGravity(){
-                Vector3d a(0,0, - MAG_EARTH);
+                Eigen :: Vector3d a(0,0, - MAG_EARTH);
                 acel = a;
             }   
 
 
-            Vector3d get_force(Particle *p1) override{
+            Eigen :: Vector3d get_force(Particle p) override{
                 //Fg_i = m * g where g is the magnitude of acelleration
                 //And i is the direction of the force
                 //Force is 0 in all but this direction
-                return acel * p1 -> m;
+                return acel * p.m;
             }
 
     };

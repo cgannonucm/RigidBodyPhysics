@@ -2,7 +2,7 @@
 #define INTERACTION_H
 
 #include "series.h"
-#include "particle.h"
+#include <Eigen/Eigen/Dense>
 
 namespace physics{
 
@@ -13,13 +13,14 @@ namespace physics{
     class Interaction{
         public:
             /**
-             * @brief Get the interaction force between two particles.
+             * @brief Get the interaction force between two particles. Finds force  Exerted on particle 1 by particle 2.
              * 
              * @param p1 The first particle
              * @param p2 The second particle
              * @return vector<long double> the interaction force between the particles.
+             * 
              */
-            virtual Vector3d get_force(Particle *p1, Particle *p2) = 0;
+            virtual Eigen :: Vector3d get_force(Particle p1, Particle p2) = 0;
 
             /**
              * @brief The id of first particle in two particle interaction
@@ -41,23 +42,25 @@ namespace physics{
      */
     class InteractionSeries : public Interaction{
         public:
-            math_series :: Series * interaction_series;
+            math_util :: Series * interaction_series;
 
-            InteractionSeries(math_series :: Series * series)
+            InteractionSeries(math_util :: Series * series)
             {
                 interaction_series = series;
             }
 
-            Vector3d get_force(Particle *p1, Particle *p2) override{
+            Eigen :: Vector3d get_force(Particle p1, Particle p2) override{
+                using namespace Eigen;
+
                 //Calculate the norm of the displacement between the particles
-                Vector3d r = p1->r - p2->r;
+                Vector3d r = p1.r - p2.r;
                 //Issue if r_norm = 0
                 //TODO: Fix
                 auto r_norm = r.norm();
 
                 //If r_norm = 0 perturb p2 by very small amount and try to calculate force again
                 if (r_norm == 0){
-                    p2->r[0] += perturb;
+                    p2.r[0] += perturb;
                     return get_force(p1,p2);
                 }
 
@@ -69,14 +72,14 @@ namespace physics{
             }
 
         private:
-            const long double perturb = pow(10.0f, 5.0f);
+            const long double perturb = pow(10.0f, -5.0f);
     };
 
     /**
      * @brief Spring series used to find the force exerted by a spring
      * 
      */
-    class SpringSeries: public math_series :: Series{
+    class SpringSeries: public math_util :: Series{
         public:
             /**
              * @brief Spring constant

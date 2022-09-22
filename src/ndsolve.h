@@ -4,9 +4,6 @@
 #include <vector>
 #include "universe.h"
 
-using namespace std;
-using namespace physics;
-
 /**
  * @brief This namespace includes tools for numerical solution of ordinary differential equations
  * 
@@ -27,12 +24,11 @@ namespace math_ndsolve{
      * 
      * @param f The right side of the equation x(t)'' = f(x(t),x(t)')
      * @param dt The time to step forward. Smaller -> better
-     * @param xxd A two dimensional vecotr of form (x(t),x(t)')
+     * @param x0 The x variable
+     * @param xd0 the x' variable
      * @return long double* A vector of form (x(t + dt),x(t + dt)')
      */
-    vector<long double> step_euler_2d(long double f, long double dt, vector<long double> xxd){
-            long double x0 = xxd[0];
-            long double xd0 = xxd[1];
+    std :: array<double, 2> step_euler_2d(double f, double dt, double x0, double xd0){
             const long double ONE_HALF = 1.0/2.0;
             /*
             From euler method 
@@ -40,8 +36,8 @@ namespace math_ndsolve{
                 and
             x'(t+dt) = x'(t) + dt * f(x,x')
             */
-            long double x = x0 + dt * xd0 + ONE_HALF * pow(dt,2) * f;
-            long double xd = xd0 + dt * f;
+            double x = x0 + dt * xd0 + ONE_HALF * pow(dt,2) * f;
+            double xd = xd0 + dt * f;
 
             return {x,xd};
     };   
@@ -53,6 +49,7 @@ namespace math_ndsolve{
      * @param dt Timestep - smaller = better
      * @param particle The particle to step forward in time
      */
+    /*
     void step_force_euler(Vector3d force,long double dt,Particle *particle){
         //Evolve each of the compontents of the particle position and velocity forward in time using the euler method
         for(int i = 0; i < 3; i++){
@@ -63,7 +60,7 @@ namespace math_ndsolve{
             particle->r[i] = xxd[0];
             particle->v[i] = xxd[1];
         };
-    };
+    };*/
 
     /**
      * @brief Steps the vector equation m*r'' = f(r,r')  forward in time for a particle 
@@ -71,16 +68,17 @@ namespace math_ndsolve{
      * @param force The force on the object evaluated a current time
      * @param particle The particle to step forward 
      */
-    void step_force(SolveMethod solve_method,Vector3d force,long double dt,Particle *particle){
+    std :: array<double, 2> step(SolveMethod solve_method, double f, double dt, double x0, double xd0){
         //Choose solution method
         switch (solve_method)
         {
             case (EULER):
-                step_force_euler(force,dt,particle);
+                return step_euler_2d(f,dt,x0,xd0);
                 break;
             default:
                 break;
         };
+        return step_euler_2d(f,dt,x0,xd0);
     };
 
 
