@@ -5,7 +5,7 @@
 
 namespace physics{
     namespace evolution{
-
+        //TODO : Put into class
         /**
          * @brief Adds to the 3d force vector to the 3 * particle count force vector
          * 
@@ -53,13 +53,15 @@ namespace physics{
 
             for (Interaction * interaction : interactions){
                 Particle p2;
+                //Get 2nd particle in interaction
                 if (interaction->pid1 == n){
                     p2 = u.get_p(interaction->pid2);
                 }
                 else{
                     p2 = u.get_p(interaction->pid1);
                 }
-                
+                //Get force calculates force on first particle
+                //p is always first particle since we are calculating the force on it
                 auto f_val = interaction->get_force(p,p2);
                 add_to_superpos(forces_super,f_val,n);
             }
@@ -177,7 +179,6 @@ namespace physics{
             //Calculate a superposition of forces acting on all particles
             auto forces_super = superposition_force(universe);
 
-            //std :: cout << forces_super << std :: endl;
 
             //Step particles position asnd velocity forward in in time based on the superposition of forces
             evolve_step_forces(forces_super,universe,dt);

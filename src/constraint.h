@@ -61,7 +61,7 @@ namespace physics{
 
             var get(std :: vector<std :: vector<var *>> &q) override{
                 auto r = q[0];
-                var constr = pow(*r[0],2) + pow(*r[1],2) + pow(*r[2],2) - pow(l,2);
+                var constr = pow(*r.at(0),2) + pow(*r.at(1),2) + pow(*r.at(2),2) - pow(l,2);
                 //var constr = pow(*r[0],2);
                 return constr;
             };

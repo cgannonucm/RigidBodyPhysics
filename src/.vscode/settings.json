@@ -79,6 +79,7 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "alignedvector3": "cpp"
     }
 }

@@ -6,95 +6,244 @@
 #include <Eigen/Eigen/Dense>
 
 namespace physics{
-    using namespace std;
-    using namespace Eigen;
-    using namespace autodiff;
 
-    class ConstraintSolver{
-
-
+    class ConstraintSolver{ 
         public:
-            vector<MatrixXd> get_J(vector<var> &c, map<int, vector<var>> &q){
-                //Number of constraints and number particles
-                int pn = q.size();
-                int cn = c.size();
-
-                //J = (grad_j(C_i))_ij
-                //Since J is matrix of vectors break it up into 3 matricies
-                //Jk = (partial_jk(C_i))_ij
-                MatrixXd Jx(pn,cn);
-                MatrixXd Jy(pn,cn);
-                MatrixXd Jz(pn,cn);
+            /**
+             * @brief Gets J and J dot matrix for constraint equation (Jacobian and time derivative of jacobian).
+             * Both matricies are size Dimension * n by m where n is number of particles m is number of constraints.
+             * 
+             * @param u The universe
+             * @param J Set to the Jacobian matrix of constraints
+             * @param Jd Set to the time derivative of the Jacobian matrix
+             * 
+             * @returns {J,Jd}
+             */
+            std :: array<Eigen :: MatrixXd,2> get_JJd(Universe &u){
+                using namespace std;
+                using namespace Eigen;
+                using namespace autodiff;
                 
-                int i = 0;
-                int j = 0;
-
-                //Populate matrix with derivatives
-                for (auto itr_q = q.begin(); itr_q != q.end(); ++itr_q){
-                    auto q_j = &(itr_q -> second);
-                    for (var c_i : c){
-                        //TODO if partical is not affected by constraint we can evaluate derivatives to 0
-                        auto [partial_x,partial_y,partial_z] = derivatives(c_i,wrt(q_j->at(0),q_j->at(1),q_j->at(2)));
-                        
-                        Jx(i,j) = partial_x;
-                        Jy(i,j) = partial_y;
-                        Jz(i,j) = partial_z;
-                        
-                        i++;
-                    }
-                    j++;
-                }
-
-                cout << Jx << endl;
-                return {Jx,Jy,Jz};
-
-            }
-            
-            vector<Vector3d> solve(vector<Vector3d> &F_ex, Universe &u){
-                
+                //Get variables everything ready
                 auto constraints = u.get_constraints();
-                auto particles = u.get_particles();
+
+                auto q = u.get_q();
+                auto v = u.get_v();
                 
-                vector<var> constraint_eval;
-
-                map<int,vector<var>> q;
-
-                //TODO Split up into functions to do each one of the tasks
-
-                //Get q vector
-                for (auto itr = particles.begin(); itr != particles.end(); ++itr){
-                    auto p = itr->second;
+                int cnst_count = constraints.size();
+                int rows = cnst_count;
+                int p_count = u.get_p_count();
+                int cols = Universe :: DIMENSION * p_count;
                     
-                    auto id =  p->id;
-                    auto r = p->r;
 
-                    q[id] = {(var) r[0],(var) r[1], (var) r[2]};
-                }
+                MatrixXd J = MatrixXd :: Zero(rows,cols);
                 
-                //Evaluate constraints
-                for (Constraint *cnstrt : constraints){
-                    vector<vector<var *>> q_cnstrt;
+                //Auxilary matricies K_j, used to calculate Jd
+                //K is nonstandard naming convention because I don't know what
+                //it is actually called
+                vector<MatrixXd> K = init_Kmats(rows,cols);
 
-                    //Get the q vectors that the particle request
-                    for (int p_id : cnstrt->p_ids){
+                vector<var> qvar = get_qvar(q);
 
-                        //auto q_id = q.find(p_id)->first;
-                        vector<var> *q_id = &(q.find(p_id)->second);
+                vector<var> c_eval = eval_constraints(constraints,qvar);
+
+                //Calculate J matrix and K matricies
+                //J = (partial_j(C_i))_ij
+                //K_j = (partial_i(partial_k(C_j)))_ik
+                for (int i = 0; i < cnst_count; i++){
+                    var *c = &c_eval.at(i);
+
+                    auto p_ids = constraints.at(i)->p_ids;
+
+                    for (int n : p_ids){
                         
-                        q_cnstrt.push_back({&q_id->at(0),&q_id->at(1),&q_id->at(2)});
+                        auto grad = grad_j(n,c,qvar);
+                        add_grad_to_mat(i,n,grad,&J);
+
+                        //Calculate K matrix
+                        //We need to calculate second partial derivatives
+                        //Todo since partial_i(partial_j(C)) =  partial_j(partial_i(C))
+                        //IE K is symetric
+                        //we can optimize by elimating these redundant calculations
+
+                        for (int m = 0; m < Universe :: DIMENSION; m++){
+                            for (int n2 : p_ids){
+                                int j = Universe :: DIMENSION * n + m;
+                                auto grad2 = grad_j(n2,&grad.at(m),qvar);
+                                add_grad_to_mat(j,n2,grad2,&K.at(i));
+                            }                 
+                        }
+                    }
+                }
+
+                MatrixXd Jd = get_Jd(K,v);
+
+                cout << J << endl;
+                cout << Jd << endl; 
+
+                return {J,Jd};
+            }
+
+
+            /**
+             * @brief Initializes mcount number of dim * dim matricies filled with 0s
+             * 
+             * @param mcount (see description)
+             * @param dim (see description)
+             * @return std (see description)
+             */
+            std :: vector<Eigen :: MatrixXd> init_Kmats(int mcount, int dim){
+                using namespace std;
+                using namespace Eigen;
+
+                vector<MatrixXd> K;
+                K.resize(mcount);
+                 
+                for (int i = 0; i < mcount; i++){
+                    K[i] = MatrixXd :: Zero(dim, dim);
+                }
+
+                return K;
+            }
+
+
+            /**
+             * @brief Convert from VectorXd q to vector<var> qvar to prepare for diferentiation
+             * 
+             * @param q Generalized position variable
+             * @return std (see description)
+             */
+            std :: vector<autodiff :: var> get_qvar(Eigen :: VectorXd q){
+                using namespace :: std;
+
+                auto cols = q.size();
+
+                vector<var> qvar;
+                qvar.resize(cols);
+
+                for (int i = 0; i < cols; i++){
+                    qvar[i] = (var) q(i);
+                }
+
+                return qvar;
+            }
+
+
+            /**
+             * @brief Evaluates the constraints in preperation for diferentiation
+             * 
+             * @param constraints The constraints to evaluate
+             * @param qvar The q vector to evaluate constraints at
+             * @return std The evaluated constraints
+             */
+            std :: vector<autodiff :: var> eval_constraints(std :: vector<Constraint *> &constraints, std :: vector<var> &qvar){
+                using namespace std;
+                using namespace Eigen;
+                using namespace autodiff;
+                
+                auto cnst_count = constraints.size();
+
+                vector<var> c_eval;
+                c_eval.resize(cnst_count);
+
+                for (int i = 0; i < cnst_count; i++){
+                    Constraint *cnst = constraints.at(i);
+
+                    //Only pass requested coordintates 
+                    vector<vector<var *>> qcnst;
+                    for (int pid : cnst->p_ids){
+                        
+                        vector<var *> q_pid;
+                        q_pid.resize(Universe :: DIMENSION);
+
+                        for (int j = 0; j < Universe :: DIMENSION; j++)
+                            q_pid[j] = &qvar.at(Universe :: get_pos(pid,j));
+
+                        qcnst.push_back(q_pid);
                     }
 
-                    //Evaluate constraint with requested q vector
-                    constraint_eval.push_back(cnstrt->get(q_cnstrt));
+                    c_eval[i] = cnst->get(qcnst);
                 }
 
-                //calculate J
-                auto J = get_J(constraint_eval,q);
-
-                //We have constraints and q vector, pass off and calculate J
-                return {{* new Vector3d(0,0,0)}};
-
+                return c_eval;
             }
+
+
+            /**
+             * @brief Takes gradient of f(q) with respect to r_j
+             *  
+             * @param j (see description)
+             * @param f (see description)
+             * @param qvar (see description)
+             * @return std array of components of gradient
+             */
+            std :: array<autodiff :: var,3> grad_j(int j, autodiff :: var *f, std :: vector<var> &qvar){
+                using namespace autodiff;
+
+                //Can't loop here because of the way wrt() is written
+
+                int xpos = Universe :: get_pos(j,0);
+                int ypos = Universe :: get_pos(j,1);
+                int zpos = Universe :: get_pos(j,2);
+
+                var *x = &qvar.at(xpos);
+                var *y = &qvar.at(ypos);
+                var *z = &qvar.at(zpos);
+                
+                auto d = derivativesx(*f,wrt(*x,*y,*z));
+
+                return d;
+            }
+
+            /**
+             * @brief Sets M(i,Dimension * j + 0) = grad(0), M(i,Dimension * j + 1) = grad(1), M(i,Dimension * j + 1) = grad(2)
+             *        
+             * 
+             * @param i (see description)
+             * @param j (see description)
+             * @param grad (see description)
+             * @param M (see description)
+             */
+            void add_grad_to_mat(int i, int n, std :: array<autodiff :: var,3> &grad, Eigen :: MatrixXd *M){
+                for (int k = 0; k < 3; k++){
+                    auto kpos = Universe :: get_pos(n,k);
+                    auto d_k = (double) grad.at(k);
+                    (*M)(i, kpos) = d_k;
+                }
+            }
+
+
+            /**
+             * @brief Gets Jd based on the auxilary matricies K and v
+             * 
+             * @param K Auxilarry matricies of second partial derivatives of C
+             * @param v Generalized velocity vector
+             * @return Eigen Jd
+             */
+            Eigen :: MatrixXd get_Jd(std :: vector<Eigen :: MatrixXd> K, Eigen :: VectorXd v){
+                using namespace Eigen;
+                using namespace std;
+
+                int cnst_count = K.size();
+                int cols = v.size();
+
+                MatrixXd Jd = MatrixXd :: Zero(cnst_count,cols);
+
+                //The ith row of Jd_i is equal to 
+                // (K_i . k)^T 
+                for (int i = 0; i < cnst_count; i++){
+                    auto kdotv = K.at(i)*v;
+                    Jd.row(i) = kdotv.transpose();
+                }
+
+                return Jd;
+            }
+
+
+            
+            //Eigen :: VectorXd solve(Eigen :: VectorXd const &F_ex, Universe &u){
+//
+            //}
 
     };
 

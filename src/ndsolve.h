@@ -9,6 +9,7 @@
  * 
  */
 namespace math_ndsolve{
+    //TODO put into class
     /**
      * @brief Enum with the different numerical solver methods available
      * 
