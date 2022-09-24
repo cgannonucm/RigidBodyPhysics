@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "universe.h"
 #include "evolution.h"
 #include "constraint_solver.h"
@@ -6,55 +7,58 @@
 
 int main()
 {
+    using namespace std;
     using namespace physics;
-    using namespace evolution;
     using namespace Eigen; 
 
-    Universe u(2);
+    Universe u(1);
 
-    double dt = 0.01;
+    double dt = 0.001;
 
     Particle p1;
-    p1.r = Vector3d(1,1,1);
-    p1.v = Vector3d(0,1,0);
+    p1.r = Vector3d(1,0,0);
+    p1.v = Vector3d(0,0,0);
     p1.m = 1;
 
-    Particle p2;
-    p2.r = Vector3d(2,2,2);
-    p2.v = Vector3d(0,0,0);
-    p2.m = 1;
-
+    //Particle p2;
+    //p2.r = Vector3d(2,2,2);
+    //p2.v = Vector3d(0,0,0);
+    //p2.m = 1;
+ 
     SpringSeries spring_coef(5,0.75);
     InteractionSeries spring_force(&spring_coef);
     
 
-    //ForceGravity fg;
+    ForceGravity fg(Vector3d(0,-9.81,0));
 
-    //u.add_force(&fg);
+    u.add_force(&fg);
 
     u.add_particle(p1);
-    u.add_particle(p2);
+    //u.add_particle(p2);
 
     ConstraintPivot1P cnst(p1,2,0);
 
     u.add_constraint(&cnst);
 
-    ConstraintSolver solver;
+    UniverseSolver solver;
 
-    solver.get_JJd(u);
+    solver.evolve_step(u,dt);
 
 
 
     //u.add_interaction(&spring_force,0,1);
-    
+    ofstream outfile;
+    outfile.open("out.txt");
 
-    //for (int i = 0; i < 500; i++){
-    //    evolve_step(u,dt);
-    //    auto x0 = u.get_p(0).r[0];
-    //    auto x1 = u.get_p(1).r[0];
-//
-    //    std :: cout << "(" << u.clock << "," << x1 - x0 << ")" << std :: endl;
-    //}
+    for (int i = 0; i < 5000; i++){
+        solver.evolve_step(u,dt);
+        auto x0 = u.get_p(0).r[0];
+        auto y0 = u.get_p(0).r[1];
+
+        outfile << "(" << x0 << "," << y0 << ")" << std :: endl;
+    }
+
+    outfile.close();
 
 
 

@@ -55,7 +55,7 @@ namespace physics{
     class ConstraintPivot1P : public Constraint{
         public:
 
-            ConstraintPivot1P(Particle p, long double _l, int id) : Constraint({id}){
+            ConstraintPivot1P(Particle p, double _l, int id) : Constraint({id}){
                 l = _l;
             }
 

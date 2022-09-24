@@ -9,6 +9,46 @@ namespace physics{
 
     class ConstraintSolver{ 
         public:
+        /**
+             * @brief Solves for the constraint forces acting on the particles in the universe
+             * 
+             * @param F_ex The external forces acting on particles
+             * @param u The Universe
+             * @return Eigen Constraint forces acting on particles
+             */
+            Eigen :: VectorXd solve(Universe &u, Eigen :: VectorXd const &F_ex){
+                using namespace Eigen;
+                //TODO implement options for solving
+                //Solve J * M ^-1 * J^T * x = -Jd * v - J * M^-1 * F_ex
+                //F_c = J^T * x
+                //Convert to the equation Ax = B
+                //A = J * (M ^ -1) * J^T 
+                //B = -(Jd * v) - ((M^-1) * F_ex)
+
+                //Prepare to solve
+                auto [J, Jd] = get_JJd(u);
+
+                VectorXd v = u.get_v();
+
+                MatrixXd Jt = J.transpose();
+                
+                MatrixXd M_inv = get_M_inv(u.get_m());
+
+                MatrixXd A = J * M_inv * Jt;
+
+                VectorXd B = -(Jd * v) - (J * M_inv * F_ex);
+
+                //Solve
+                VectorXd x = A.colPivHouseholderQr().solve(B);
+
+                //Convert to constraint force
+                VectorXd F_c = Jt * x;
+                
+                return F_c;
+
+            }
+        
+        private:
             /**
              * @brief Gets J and J dot matrix for constraint equation (Jacobian and time derivative of jacobian).
              * Both matricies are size Dimension * n by m where n is number of particles m is number of constraints.
@@ -54,7 +94,8 @@ namespace physics{
                     var *c = &c_eval.at(i);
 
                     auto p_ids = constraints.at(i)->p_ids;
-
+                    
+                    //Only need to take take derivatives with respect to the coordinates passed to C_i
                     for (int n : p_ids){
                         
                         auto grad = grad_j(n,c,qvar);
@@ -78,8 +119,8 @@ namespace physics{
 
                 MatrixXd Jd = get_Jd(K,v);
 
-                cout << J << endl;
-                cout << Jd << endl; 
+                //cout << J << endl;
+                //cout << Jd << endl; 
 
                 return {J,Jd};
             }
@@ -113,7 +154,7 @@ namespace physics{
              * @param q Generalized position variable
              * @return std (see description)
              */
-            std :: vector<autodiff :: var> get_qvar(Eigen :: VectorXd q){
+            std :: vector<autodiff :: var> get_qvar(Eigen :: VectorXd &q){
                 using namespace :: std;
 
                 auto cols = q.size();
@@ -220,7 +261,7 @@ namespace physics{
              * @param v Generalized velocity vector
              * @return Eigen Jd
              */
-            Eigen :: MatrixXd get_Jd(std :: vector<Eigen :: MatrixXd> K, Eigen :: VectorXd v){
+            Eigen :: MatrixXd get_Jd(std :: vector<Eigen :: MatrixXd> &K, Eigen :: VectorXd &v){
                 using namespace Eigen;
                 using namespace std;
 
@@ -240,10 +281,36 @@ namespace physics{
             }
 
 
+            /**
+             * @brief Get the MInv matrix size (3n, 3n) from the m vector (m1,m2,...,mn)
+             * 
+             * @param u Universe to get 
+             * @return Eigen 
+             */
+            Eigen :: MatrixXd get_M_inv(Eigen :: VectorXd mv){
+                using namespace Eigen;
+
+                int n = mv.size();
+                int dim = Universe :: DIMENSION * n;
+
+                MatrixXd MInv = MatrixXd :: Zero(dim,dim);
+
+                //M is diagonal matrix of whose diagonal is (m1,m1,m1,...,mn,mn,mn)
+                //Therefore M inv is a matrix whose diagonal is (1/m1,1/m1,1/m1,...,1/mn,1/mn,1/mn)
+                for (int i = 0; i < n; i++){
+                    double m = mv(i);
+
+                    for (int k = 0; k < Universe :: DIMENSION; k++){
+                        int j = Universe :: get_pos(i,k);
+                        MInv(j,j) = 1/m;
+                    }
+                }
+
+                return MInv;
+            }
+
+
             
-            //Eigen :: VectorXd solve(Eigen :: VectorXd const &F_ex, Universe &u){
-//
-            //}
 
     };
 

@@ -2,7 +2,9 @@
 #define MATH_NDSOLVE_H
 
 #include <vector>
+#include <functional>
 #include "universe.h"
+#define EVector Eigen :: VectorXd
 
 /**
  * @brief This namespace includes tools for numerical solution of ordinary differential equations
@@ -30,6 +32,31 @@ namespace math_ndsolve{
      * @return long double* A vector of form (x(t + dt),x(t + dt)')
      */
     std :: array<double, 2> step_euler_2d(double f, double dt, double x0, double xd0){
+            const long double ONE_HALF = 1.0/2.0;
+            /*
+            From euler method 
+            x(t + dt) = x(t) + dt * x'(t) + (1/2)(dt^2) * f(x,xd)
+                and
+            x'(t+dt) = x'(t) + dt * f(x,x')
+            */
+            double x = x0 + dt * xd0 + ONE_HALF * pow(dt,2) * f;
+            double xd = xd0 + dt * f;
+
+            return {x,xd};
+    };
+
+    /**
+     * @brief Steps a differential equation, x'' = f(x,x')
+     * forward in time using numerical rk4 method
+     * https://willbeason.com/2021/06/25/improve-your-runge-kutta-nystrom-algorithms-with-this-one-weird-trick/
+     * 
+     * @param f The right side of the equation x(t)'' = f(x(t),x(t)')
+     * @param dt The time to step forward. Smaller -> better
+     * @param x0 The x variable
+     * @param xd0 the x' variable
+     * @return long double* A vector of form (x(t + dt),x(t + dt)')
+     */
+    std :: array<double, 2> step_rk4_2d(double f, double dt, double x0, double xd0){
             const long double ONE_HALF = 1.0/2.0;
             /*
             From euler method 
@@ -81,6 +108,44 @@ namespace math_ndsolve{
         };
         return step_euler_2d(f,dt,x0,xd0);
     };
+
+    std :: array<EVector, 2> step_euler_2d(std :: function<EVector (EVector, EVector)> f, 
+        EVector q0, EVector v0, double dt){ 
+            
+        using namespace Eigen;
+
+        auto f0 = f(q0,v0);
+
+        const double ONE_HALF = 1.0/2.0;
+        /*
+        From euler method 
+        x(t + dt) = x(t) + dt * x'(t) + (1/2)(dt^2) * f(x,xd)
+            and
+        x'(t+dt) = x'(t) + dt * f(x,x')
+        */
+
+        VectorXd q = q0 + dt * v0 + ONE_HALF * pow(dt,2) * f0;
+        VectorXd v = v0 + dt * f0; 
+
+        return {q,v};
+
+    }
+
+
+    std :: array<EVector, 2> step(SolveMethod solve_method, 
+        std :: function<EVector (EVector, EVector)> f,
+        EVector q0, EVector v0, double dt)
+    {
+        switch (solve_method)
+        {
+            case (EULER):
+                return step_euler_2d(f,q0,v0,dt);
+                break;
+            default:
+                break;
+        };
+        return step_euler_2d(f,q0,v0,dt);
+    }
 
 
 
