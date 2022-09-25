@@ -35,7 +35,7 @@ namespace physics{
                 auto v0 = u.get_v();
 
                 auto f = bind(&UniverseSolver :: get_a,this,_1,_2,ref(u));
-                auto [q,v] = ndstep_v(EULER,f,q0,v0,dt);
+                auto [q,v] = ndstep(RK4,f,q0,v0,dt);
 
                 u.set_q(q);
                 u.set_v(v);

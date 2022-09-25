@@ -6,6 +6,7 @@
 #define EVector Eigen :: VectorXd
 #define EVectorNd Eigen :: Vector3d
 #define UDim 3
+typedef std :: function<EVector (EVector &, EVector &)> funcqv;
 
 
 #endif

@@ -50,12 +50,12 @@ int main()
     ofstream outfile;
     outfile.open("out.txt");
 
-    for (int i = 0; i < 5000; i++){
+    for (int i = 0; i < 100000; i++){
         solver.evolve_step(u,dt);
         auto x0 = u.get_p(0).r[0];
         auto y0 = u.get_p(0).r[1];
 
-        if (i % 10 == 0)
+        if (i % 200 == 0)
             outfile << "(" << x0 << "," << y0 << ")" << std :: endl;
     }
 

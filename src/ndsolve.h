@@ -17,99 +17,11 @@ namespace math_ndsolve{
      * 
      */
     enum SolveMethod{
-        EULER
+        EULER,
+        RK4
     };
 
-    /**
-     * @brief Steps a differential equation, x'' = f(x,x')
-     * forward in time using numerical euler method
-     * https://en.wikipedia.org/wiki/Euler_method
-     * 
-     * @param f The right side of the equation x(t)'' = f(x(t),x(t)')
-     * @param dt The time to step forward. Smaller -> better
-     * @param x0 The x variable
-     * @param xd0 the x' variable
-     * @return long double* A vector of form (x(t + dt),x(t + dt)')
-     */
-    std :: array<double, 2> ndstep_euler_2d(double f, double dt, double x0, double xd0){
-            const long double ONE_HALF = 1.0/2.0;
-            /*
-            From euler method 
-            x(t + dt) = x(t) + dt * x'(t) + (1/2)(dt^2) * f(x,xd)
-                and
-            x'(t+dt) = x'(t) + dt * f(x,x')
-            */
-            double x = x0 + dt * xd0 + ONE_HALF * pow(dt,2) * f;
-            double xd = xd0 + dt * f;
-
-            return {x,xd};
-    };
-
-    /**
-     * @brief Steps a differential equation, x'' = f(x,x')
-     * forward in time using numerical rk4 method
-     * https://willbeason.com/2021/06/25/improve-your-runge-kutta-nystrom-algorithms-with-this-one-weird-trick/
-     * 
-     * @param f The right side of the equation x(t)'' = f(x(t),x(t)')
-     * @param dt The time to step forward. Smaller -> better
-     * @param x0 The x variable
-     * @param xd0 the x' variable
-     * @return long double* A vector of form (x(t + dt),x(t + dt)')
-     */
-    std :: array<double, 2> ndstep_rk4_2d(double f, double dt, double x0, double xd0){
-            const long double ONE_HALF = 1.0/2.0;
-            /*
-            From euler method 
-            x(t + dt) = x(t) + dt * x'(t) + (1/2)(dt^2) * f(x,xd)
-                and
-            x'(t+dt) = x'(t) + dt * f(x,x')
-            */
-            double x = x0 + dt * xd0 + ONE_HALF * pow(dt,2) * f;
-            double xd = xd0 + dt * f;
-
-            return {x,xd};
-    };   
-
-    /**
-     * @brief Steps the equation m*r'' = f(r,r')  forward in time for a particle using euler method
-     * 
-     * @param force Force acting on particle
-     * @param dt Timestep - smaller = better
-     * @param particle The particle to step forward in time
-     */
-    /*
-    void step_force_euler(Vector3d force,long double dt,Particle *particle){
-        //Evolve each of the compontents of the particle position and velocity forward in time using the euler method
-        for(int i = 0; i < 3; i++){
-            //mx''_i = F_i -> x''_i = 1/m * F_i . 
-            //We need to solve the equation x''_i = 1/m * F_i
-            auto xxd = step_euler_2d( (1 / particle->m) * force[i],dt,{particle->r[i],particle->v[i]});
-
-            particle->r[i] = xxd[0];
-            particle->v[i] = xxd[1];
-        };
-    };*/
-
-    /**
-     * @brief Steps the vector equation m*r'' = f(r,r')  forward in time for a particle 
-     * 
-     * @param force The force on the object evaluated a current time
-     * @param particle The particle to step forward 
-     */
-    std :: array<double, 2> ndstep(SolveMethod solve_method, double f, double dt, double x0, double xd0){
-        //Choose solution method
-        switch (solve_method)
-        {
-            case (EULER):
-                return ndstep_euler_2d(f,dt,x0,xd0);
-                break;
-            default:
-                break;
-        };
-        return ndstep_euler_2d(f,dt,x0,xd0);
-    };
-
-    std :: array<EVector, 2> ndstep_euler_2d(std :: function<EVector (EVector &, EVector &)> f, 
+    std :: array<EVector, 2> ndstep_euler_2d(funcqv f, 
         EVector q0, EVector v0, double dt){ 
             
         using namespace Eigen;
@@ -131,9 +43,62 @@ namespace math_ndsolve{
 
     }
 
+    /**
+     * @brief Steps a differential equation, x'' = f(x,x')
+     * forward in time using numerical rk4 method
+     * https://willbeason.com/2021/06/25/improve-your-runge-kutta-nystrom-algorithms-with-this-one-weird-trick/
+     * Note there is a typo in article in many of the formulas y_0 should be y'_0
+     * 
+     * @param f The right side of the equation x(t)'' = f(x(t),x(t)')
+     * @param dt The time to step forward. Smaller -> better
+     * @param x0 The x variable
+     * @param xd0 the x' variable
+     * @return long double* A vector of form (x(t + dt),x(t + dt)')
+     */
+    std :: array<EVector, 2> ndstep_rk4_2d(funcqv f, 
+        EVector q0, EVector v0, double dt){ 
+            
+        using namespace Eigen;
 
-    std :: array<EVector, 2> ndstep_v(SolveMethod solve_method, 
-        std :: function<EVector (EVector &, EVector &)> f,
+        
+        const double ONE2 = 1.0/2.0;
+        const double ONE6 = 1.0/6.0;
+
+        double halfdt = dt * ONE2;
+        double sixthdt = dt * ONE6;
+
+        //Step 1
+        EVector k1 = f(q0,v0);
+        EVector v1 = v0 + k1 * halfdt;
+        EVector q1 = q0 + ONE6 * halfdt * (halfdt*k1 + 4*v0 + 2*v1);
+
+        //Step 2
+        EVector k2 = f(q1,v1);
+        EVector v2 = v0 + k2 * halfdt;
+        EVector q2 = q0 + ONE6 * halfdt * (halfdt*k1 + 4*v0 + 2*v2);
+
+        //Step 3
+        //This part of the formula changes up a bit from first 2 steps
+        //This is not a typo
+        EVector k3 = f(q2,v2);
+        EVector v3 = v0 + k3 * dt;
+        EVector q3 = q0 + ONE6 * dt * (dt*k1 + 4*v0 + 2*v3);
+
+        //Step 4
+        EVector k4 = f(q3,v3);
+
+
+        //Put it together
+        EVector q = q0 + sixthdt * (v0 + 2 * v1 + 2 * v2 + v3);
+        EVector v = v0 + sixthdt * (k1 + 2 * k2 + 2 * k3 + k4);
+
+        return {q,v};
+
+    }
+
+
+    std :: array<EVector, 2> ndstep(SolveMethod solve_method, 
+        funcqv f,
         EVector q0, EVector v0, double dt)
     {
         switch (solve_method)
@@ -141,10 +106,13 @@ namespace math_ndsolve{
             case (EULER):
                 return ndstep_euler_2d(f,q0,v0,dt);
                 break;
+            case (RK4):
+                return ndstep_rk4_2d(f,q0,v0,dt);
             default:
                 break;
         };
-        return ndstep_euler_2d(f,q0,v0,dt);
+        throw std :: invalid_argument("Requested solve method not implemented");
+        
     }
 
 
