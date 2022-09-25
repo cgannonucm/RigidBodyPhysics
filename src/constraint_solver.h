@@ -16,7 +16,8 @@ namespace physics{
              * @param u The Universe
              * @return Eigen Constraint forces acting on particles
              */
-            Eigen :: VectorXd solve(Universe &u, Eigen :: VectorXd const &F_ex){
+            Eigen :: VectorXd solve(const EVector &q, const EVector &v,const EVector &m,
+             std :: vector<Constraint *> &cnst, const EVector &F_ex){
                 using namespace Eigen;
                 //TODO implement options for solving
                 //Solve J * M ^-1 * J^T * x = -Jd * v - J * M^-1 * F_ex
@@ -26,13 +27,11 @@ namespace physics{
                 //B = -(Jd * v) - ((M^-1) * F_ex)
 
                 //Prepare to solve
-                auto [J, Jd] = get_JJd(u);
-
-                VectorXd v = u.get_v();
+                auto [J, Jd] = get_JJd(q,v,cnst);
 
                 MatrixXd Jt = J.transpose();
                 
-                MatrixXd M_inv = get_M_inv(u.get_m());
+                MatrixXd M_inv = get_M_inv(m);
 
                 MatrixXd A = J * M_inv * Jt;
 
@@ -47,6 +46,34 @@ namespace physics{
                 return F_c;
 
             }
+
+            /**
+             * @brief Get the MInv matrix size (3n, 3n) from the m vector (m1,m2,...,mn)
+             * 
+             * @param u Universe to get 
+             * @return Eigen 
+             */
+            static Eigen :: MatrixXd get_M_inv(Eigen :: VectorXd mv){
+                using namespace Eigen;
+
+                int n = mv.size();
+                int dim = Universe :: DIMENSION * n;
+
+                MatrixXd MInv = MatrixXd :: Zero(dim,dim);
+
+                //M is diagonal matrix of whose diagonal is (m1,m1,m1,...,mn,mn,mn)
+                //Therefore M inv is a matrix whose diagonal is (1/m1,1/m1,1/m1,...,1/mn,1/mn,1/mn)
+                for (int i = 0; i < n; i++){
+                    double m = mv(i);
+
+                    for (int k = 0; k < Universe :: DIMENSION; k++){
+                        int j = Universe :: get_pos(i,k);
+                        MInv(j,j) = 1/m;
+                    }
+                }
+
+                return MInv;
+            }
         
         private:
             /**
@@ -59,21 +86,14 @@ namespace physics{
              * 
              * @returns {J,Jd}
              */
-            std :: array<Eigen :: MatrixXd,2> get_JJd(Universe &u){
+            std :: array<Eigen :: MatrixXd,2> get_JJd(EVector q, EVector v, std :: vector<Constraint *> constraints){
                 using namespace std;
                 using namespace Eigen;
                 using namespace autodiff;
                 
-                //Get variables everything ready
-                auto constraints = u.get_constraints();
-
-                auto q = u.get_q();
-                auto v = u.get_v();
-                
                 int cnst_count = constraints.size();
                 int rows = cnst_count;
-                int p_count = u.get_p_count();
-                int cols = Universe :: DIMENSION * p_count;
+                int cols = q.size();
                     
 
                 MatrixXd J = MatrixXd :: Zero(rows,cols);
@@ -281,33 +301,7 @@ namespace physics{
             }
 
 
-            /**
-             * @brief Get the MInv matrix size (3n, 3n) from the m vector (m1,m2,...,mn)
-             * 
-             * @param u Universe to get 
-             * @return Eigen 
-             */
-            Eigen :: MatrixXd get_M_inv(Eigen :: VectorXd mv){
-                using namespace Eigen;
 
-                int n = mv.size();
-                int dim = Universe :: DIMENSION * n;
-
-                MatrixXd MInv = MatrixXd :: Zero(dim,dim);
-
-                //M is diagonal matrix of whose diagonal is (m1,m1,m1,...,mn,mn,mn)
-                //Therefore M inv is a matrix whose diagonal is (1/m1,1/m1,1/m1,...,1/mn,1/mn,1/mn)
-                for (int i = 0; i < n; i++){
-                    double m = mv(i);
-
-                    for (int k = 0; k < Universe :: DIMENSION; k++){
-                        int j = Universe :: get_pos(i,k);
-                        MInv(j,j) = 1/m;
-                    }
-                }
-
-                return MInv;
-            }
 
 
             

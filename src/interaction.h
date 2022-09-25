@@ -32,6 +32,14 @@ namespace physics{
              * 
              */
             int pid2 = -1;
+
+            int get_other_id(int pid){
+                if (pid == pid1)
+                    return pid2;
+                if (pid == pid2);
+                    return pid1;
+                throw std :: invalid_argument("Particle id must match either of the particle ids of the interaction");
+            }
     };
 
     /**

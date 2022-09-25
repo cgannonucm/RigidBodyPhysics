@@ -55,7 +55,8 @@ int main()
         auto x0 = u.get_p(0).r[0];
         auto y0 = u.get_p(0).r[1];
 
-        outfile << "(" << x0 << "," << y0 << ")" << std :: endl;
+        if (i % 10 == 0)
+            outfile << "(" << x0 << "," << y0 << ")" << std :: endl;
     }
 
     outfile.close();

@@ -5,6 +5,7 @@
 #include "force.h"
 #include "interaction.h"
 #include "constraint.h"
+#include "macros.h"
 
 
 namespace physics
@@ -83,8 +84,16 @@ namespace physics
              * @return Vector3d The r coordinates
              */
             Eigen :: Vector3d get_p_r(int pid){
-                assert(pid < p_count && pid >= 0);
-                return Eigen :: Vector3d(q(DIMENSION * pid + 0), q(DIMENSION * pid + 1), q(DIMENSION * pid + 2));
+                return Universe :: get_p_r(pid,q);
+            }
+            
+            static EVectorNd get_p_r(int pid, EVector &_q){
+                assert(pid * (UDim + 1) <= _q.size() && pid >= 0);
+                EVectorNd r = EVectorNd :: Zero();
+                for (int j = 0; j < UDim; j++)
+                    r(j) = _q(Universe :: get_pos(pid,j));
+
+                return r;
             }
 
             /**
@@ -95,8 +104,11 @@ namespace physics
              * @return Vector3d The v coordinates
              */
             Eigen :: Vector3d get_p_v(int pid){
-                assert(pid < p_count && pid >= 0);
-                return Eigen :: Vector3d(v(DIMENSION * pid + 0), v(DIMENSION * pid + 1), v(DIMENSION * pid + 2));
+                return Universe :: get_p_v(pid,v);
+            }
+
+            static EVectorNd get_p_v(int pid, EVector &_v){
+                return Universe :: get_p_r(pid,_v);
             }
 
 
@@ -107,9 +119,14 @@ namespace physics
              * @return double* The pointer to the mass
              */
             double get_p_m(int pid){
-                assert(pid < p_count && pid >= 0);
-                return m(pid); 
-            } 
+                return Universe :: get_p_m(pid,m); 
+            }
+
+            static double get_p_m(int pid, EVector &_m){
+                assert(pid < _m.size());
+                return _m(pid);
+                
+            }
 
             /**
              * @brief Add a force to the universe 
@@ -148,11 +165,21 @@ namespace physics
             }
 
             /**
-             * @brief Gets the interactions acting on a particle 
+             * @brief Gets the interactions in the universe
+             * 
+             * @return Interactions in the universe
              * 
              */
-            std :: vector<Interaction *> get_interactions(int id){
-                return interactions.at(id);
+            std :: vector<std :: vector<Interaction *>> get_interactions(){
+                return interactions;
+            }
+
+            std :: vector<Interaction *> get_p_interactions(int pid){
+                return get_p_interactions(pid,interactions);
+            }
+
+            static std :: vector<Interaction *> get_p_interactions(int pid, std :: vector<std :: vector<Interaction *>> _interactions){
+                return _interactions.at(pid);
             }
 
             /**
@@ -176,6 +203,16 @@ namespace physics
                 return constraints;
             }
 
+
+            static Particle get_p(int pid, EVector &_q, EVector &_v, EVector &_m){
+                Particle p;
+                p.r = get_p_r(pid,_q);
+                p.v = get_p_v(pid,_v);
+                p.m = get_p_m(pid,_m);
+                p.id = pid;
+                return p;
+            }
+
             /**
              * @brief Gets all the properties of the particle.
              * 
@@ -183,11 +220,7 @@ namespace physics
              * @return Particle the properties of the particle.
              */
             Particle get_p(int pid){
-                Particle p;
-                p.r = get_p_r(pid);
-                p.v = get_p_v(pid);
-                p.m = get_p_m(pid);
-                return p;
+                return get_p(pid,q,v,m);
             }
 
             /**
@@ -223,6 +256,7 @@ namespace physics
                 return m;
             }
 
+
             /**
              * @brief Set the q vector
              * 
@@ -253,6 +287,7 @@ namespace physics
                 return p_count;
             }
 
+
             /**
              * @brief Returns the position in the q / v vector of the specified particle / coordinate
              * 
@@ -261,7 +296,7 @@ namespace physics
              * @return int The position in the vector of the particle / coordinate
              */
             static int get_pos(int n, int j){
-                return Universe :: DIMENSION * n + j;
+                return UDim * n + j;
             }
             
         

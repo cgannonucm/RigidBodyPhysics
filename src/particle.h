@@ -2,14 +2,16 @@
 #define PARTICLE_H
 
 #include <Eigen/Eigen/Dense>
+#include "macros.h"
 
 namespace physics
 {
     struct Particle
     {
-        Eigen :: Vector3d r;
-        Eigen :: Vector3d v;
-        double m;    
+        EVectorNd r;
+        EVectorNd v;
+        double m;
+        int id = -1;
     };
     
 }

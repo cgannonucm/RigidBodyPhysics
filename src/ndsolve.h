@@ -4,7 +4,7 @@
 #include <vector>
 #include <functional>
 #include "universe.h"
-#define EVector Eigen :: VectorXd
+#include "macros.h"
 
 /**
  * @brief This namespace includes tools for numerical solution of ordinary differential equations
@@ -31,7 +31,7 @@ namespace math_ndsolve{
      * @param xd0 the x' variable
      * @return long double* A vector of form (x(t + dt),x(t + dt)')
      */
-    std :: array<double, 2> step_euler_2d(double f, double dt, double x0, double xd0){
+    std :: array<double, 2> ndstep_euler_2d(double f, double dt, double x0, double xd0){
             const long double ONE_HALF = 1.0/2.0;
             /*
             From euler method 
@@ -56,7 +56,7 @@ namespace math_ndsolve{
      * @param xd0 the x' variable
      * @return long double* A vector of form (x(t + dt),x(t + dt)')
      */
-    std :: array<double, 2> step_rk4_2d(double f, double dt, double x0, double xd0){
+    std :: array<double, 2> ndstep_rk4_2d(double f, double dt, double x0, double xd0){
             const long double ONE_HALF = 1.0/2.0;
             /*
             From euler method 
@@ -96,20 +96,20 @@ namespace math_ndsolve{
      * @param force The force on the object evaluated a current time
      * @param particle The particle to step forward 
      */
-    std :: array<double, 2> step(SolveMethod solve_method, double f, double dt, double x0, double xd0){
+    std :: array<double, 2> ndstep(SolveMethod solve_method, double f, double dt, double x0, double xd0){
         //Choose solution method
         switch (solve_method)
         {
             case (EULER):
-                return step_euler_2d(f,dt,x0,xd0);
+                return ndstep_euler_2d(f,dt,x0,xd0);
                 break;
             default:
                 break;
         };
-        return step_euler_2d(f,dt,x0,xd0);
+        return ndstep_euler_2d(f,dt,x0,xd0);
     };
 
-    std :: array<EVector, 2> step_euler_2d(std :: function<EVector (EVector, EVector)> f, 
+    std :: array<EVector, 2> ndstep_euler_2d(std :: function<EVector (EVector &, EVector &)> f, 
         EVector q0, EVector v0, double dt){ 
             
         using namespace Eigen;
@@ -132,19 +132,19 @@ namespace math_ndsolve{
     }
 
 
-    std :: array<EVector, 2> step(SolveMethod solve_method, 
-        std :: function<EVector (EVector, EVector)> f,
+    std :: array<EVector, 2> ndstep_v(SolveMethod solve_method, 
+        std :: function<EVector (EVector &, EVector &)> f,
         EVector q0, EVector v0, double dt)
     {
         switch (solve_method)
         {
             case (EULER):
-                return step_euler_2d(f,q0,v0,dt);
+                return ndstep_euler_2d(f,q0,v0,dt);
                 break;
             default:
                 break;
         };
-        return step_euler_2d(f,q0,v0,dt);
+        return ndstep_euler_2d(f,q0,v0,dt);
     }
 
 
