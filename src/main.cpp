@@ -3,6 +3,7 @@
 #include "universe.h"
 #include "evolution.h"
 #include "constraint_solver.h"
+#include "logger.h"
 
 
 int main()
@@ -11,22 +12,27 @@ int main()
     using namespace physics;
     using namespace Eigen; 
 
-    Universe u(1);
+    Universe u(3);
 
-    double dt = 0.001;
+    double dt = 0.01;
 
     Particle p1;
     p1.r = Vector3d(1,0,0);
     p1.v = Vector3d(0,0,0);
     p1.m = 1;
 
-    //Particle p2;
-    //p2.r = Vector3d(2,2,2);
-    //p2.v = Vector3d(0,0,0);
-    //p2.m = 1;
+    Particle p2;
+    p2.r = Vector3d(2,0,0);
+    p2.v = Vector3d(0,-1,0);
+    p2.m = 1;
+
+    Particle p3;
+    p3.r = Vector3d(3,0,0);
+    p3.v = Vector3d(0,0,0);
+    p3.m = 1;
  
-    SpringSeries spring_coef(5,0.75);
-    InteractionSeries spring_force(&spring_coef);
+    //SpringSeries spring_coef(5,0.75);
+    //InteractionSeries spring_force(&spring_coef);
     
 
     ForceGravity fg(Vector3d(0,-9.81,0));
@@ -34,31 +40,36 @@ int main()
     u.add_force(&fg);
 
     u.add_particle(p1);
-    //u.add_particle(p2);
+    u.add_particle(p2);
+    u.add_particle(p3);
 
     ConstraintPivot1P cnst(p1,2,0);
+    ConstraintPivot2p cnst2(p1,p2,0,1);
+    ConstraintPivot2p cnst3(p2,p3,1,2);
 
     u.add_constraint(&cnst);
+    u.add_constraint(&cnst2);
+    u.add_constraint(&cnst3);
 
     UniverseSolver solver;
 
-    solver.evolve_step(u,dt);
+    //solver.evolve_step(u,dt);
 
-
+    DefaultLogger logger(u);
+    solver.loggers.push_back(&logger);
 
     //u.add_interaction(&spring_force,0,1);
-    ofstream outfile;
-    outfile.open("out.txt");
 
-    for (int i = 0; i < 100000; i++){
+
+    for (int i = 0; i < 5000; i++){
         solver.evolve_step(u,dt);
-        auto x0 = u.get_p(0).r[0];
-        auto y0 = u.get_p(0).r[1];
-
-        if (i % 200 == 0)
-            outfile << "(" << x0 << "," << y0 << ")" << std :: endl;
     }
 
+    string logout = logger.get_csv_output();
+
+    ofstream outfile;
+    outfile.open("pendulum3.csv");
+    outfile << logout;
     outfile.close();
 
 

@@ -55,7 +55,7 @@ namespace physics{
     class ConstraintPivot1P : public Constraint{
         public:
 
-            ConstraintPivot1P(Particle p, double _l, int id) : Constraint({id}){
+            ConstraintPivot1P(Particle &p, double _l, int id) : Constraint({id}){
                 l = _l;
             }
 
@@ -69,6 +69,28 @@ namespace physics{
         private:
             var l;
             
+    };
+
+    class ConstraintPivot2p : public Constraint{
+        public:
+
+
+            ConstraintPivot2p(Particle &p1, Particle &p2, int id1, int id2) : Constraint({id1,id2}){
+                l = (p1.r - p2.r).norm();
+            }
+
+            var get(std :: vector<std :: vector<var *>> &q) override{
+                auto r1 = q[0];
+                auto r2 = q[1];
+
+                var constr = pow(*r1.at(0) - *r2.at(0),2) +  pow(*r1.at(1) - *r2.at(1),2) +  pow(*r1.at(2) - *r2.at(2),2) -  pow(l,2);
+                //var constr = pow(*r[0],2);
+                return constr;
+            };
+
+            private: 
+                var l;
+
     };
 }
 

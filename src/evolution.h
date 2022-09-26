@@ -3,11 +3,17 @@
 
 #include "ndsolve.h"
 #include "constraint_solver.h"
+#include <chrono>
 #include "macros.h"
+#include "logger.h"
 
 namespace physics{
     class UniverseSolver{
         public:
+
+            long perft_JJd = 0;
+
+            std :: vector<Logger *> loggers; 
 
             ConstraintSolver csolver;
 
@@ -42,10 +48,14 @@ namespace physics{
 
                 //Update the universe clock
                 u.clock += dt;
+
+                log(u);
+
             }
 
             EVector get_forces(EVector &q, EVector &v,Universe &u){
                 using namespace Eigen;
+                typedef std::chrono::high_resolution_clock Clock;
 
                 auto mv = u.get_m();
                 auto forces = u.get_forces();
@@ -194,48 +204,11 @@ namespace physics{
 
             }
 
-
-            /**
-             * @brief Steps the particles forward in time based on forces.
-             * 
-             * @param forces The forces acting on each of the particles.
-             * @param universe Universe to step forward in time.
-             * @param dt The timestep to step the universe forward - smaller is better.
-             */
-            /*
-            void evolve_step_forces(Eigen :: VectorXd &forces, Universe &universe, long double dt){
-                using namespace Eigen;
-
-                auto dim = forces.size();
-
-                auto q0 = universe.get_q();
-                auto v0 = universe.get_v();
-                auto m = expand_m_vector(universe);
-
-                VectorXd q = VectorXd :: Zero(dim);
-                VectorXd v = VectorXd :: Zero(dim);
-
-                for (int i = 0; i < dim; i++){
-
-                    auto q0_i = q0(i);
-                    auto v0_i = v0(i);
-                    auto m_i = m(i);
-                    auto f_i = forces(i);
-
-                    //From newton's law m * x''_i = f(x,x',t)
-                    //We need to use ndsolve to solve equation x''_i = 1/m * f(x_i,x'_i,t)
-                    auto [q_i, v_i] = math_ndsolve :: step(math_ndsolve :: EULER, f_i / m_i, dt, q0_i, v0_i);
-
-                    q(i) = q_i;
-                    v(i) = v_i;
+            void log(Universe &u){
+                for (auto logptr : loggers){
+                    logptr->log(u);
                 }
-
-                universe.set_q(q);
-                universe.set_v(v);
-            }*/
-
-
-
+            }
     };
 }
 
