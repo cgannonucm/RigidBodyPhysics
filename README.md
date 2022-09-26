@@ -88,7 +88,7 @@ Physics of point particles
 - [x] Implement logger
 - [x] Write state recorder / basic I/O code
 - [x] Implement constraint forces
-- [z] Implement Runge-Kutta method for 2nd order ODEs
+- [x] Implement Runge-Kutta method for 2nd order ODEs
 - [ ] Document everything up to this point
 - [ ] Write tests
 
