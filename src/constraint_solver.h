@@ -29,11 +29,11 @@ namespace physics{
                 //Prepare to solve
                 auto [J, Jd] = get_JJd(q,v,cnst);
 
-                MatrixXd Jt = J.transpose();
+                Mat Jt = J.transpose();
                 
-                MatrixXd M_inv = get_M_inv(m);
+                Mat M_inv = get_M_inv(m);
 
-                MatrixXd A = J * M_inv * Jt;
+                Mat A = J * M_inv * Jt;
 
                 VectorXd B = -(Jd * v) - (J * M_inv * F_ex);
 
@@ -53,13 +53,13 @@ namespace physics{
              * @param u Universe to get 
              * @return Eigen 
              */
-            static Eigen :: MatrixXd get_M_inv(EVector mv){
+            static Mat get_M_inv(EVector mv){
                 using namespace Eigen;
 
                 int n = mv.size();
                 int dim = UDim * n;
 
-                MatrixXd MInv = MatrixXd :: Zero(dim,dim);
+                Mat MInv = Mat :: Zero(dim,dim);
 
                 //M is diagonal matrix of whose diagonal is (m1,m1,m1,...,mn,mn,mn)
                 //Therefore M inv is a matrix whose diagonal is (1/m1,1/m1,1/m1,...,1/mn,1/mn,1/mn)
@@ -86,7 +86,7 @@ namespace physics{
              * 
              * @returns {J,Jd}
              */
-            std :: array<Eigen :: MatrixXd,2> get_JJd(EVector q, EVector v, std :: vector<Constraint *> constraints){
+            std :: array<Mat,2> get_JJd(EVector q, EVector v, std :: vector<Constraint *> constraints){
                 using namespace std;
                 using namespace Eigen;
                 using namespace autodiff;
@@ -96,11 +96,11 @@ namespace physics{
                 int cols = q.size();
                     
 
-                MatrixXd J = MatrixXd :: Zero(rows,cols);
+                Mat J = Mat :: Zero(rows,cols);
                 
                 //Auxilary matricies H_j, used to calculate Jd
                 //H is the Hessian Tensor of C
-                vector<MatrixXd> H = init_Kmats(rows,cols);
+                vector<Mat> H = init_Kmats(rows,cols);
 
                 vector<var> qvar = get_qvar(q);
 
@@ -150,7 +150,7 @@ namespace physics{
                     }
                 }
 
-                MatrixXd Jd = get_Jd(H,v);
+                Mat Jd = get_Jd(H,v);
 
                 //cout << J << endl;
                 //cout << Jd << endl; 
@@ -166,14 +166,14 @@ namespace physics{
              * @param dim (see description)
              * @return std (see description)
              */
-            std :: vector<Eigen :: MatrixXd> init_Kmats(int mcount, int dim){
+            std :: vector<Mat> init_Kmats(int mcount, int dim){
                 USING_STANDARD_NAMESPACES;
 
-                vector<MatrixXd> K;
+                vector<Mat> K;
                 K.resize(mcount);
                  
                 for (int i = 0; i < mcount; i++){
-                    K[i] = MatrixXd :: Zero(dim, dim);
+                    K[i] = Mat :: Zero(dim, dim);
                 }
 
                 return K;
@@ -303,7 +303,7 @@ namespace physics{
              * @param grad (see description)
              * @param M (see description)
              */
-            void add_grad_to_mat(int i, int n, std :: array<autodiff :: var,3> &grad, Eigen :: MatrixXd *M){
+            void add_grad_to_mat(int i, int n, std :: array<autodiff :: var,3> &grad, Mat *M){
                 for (int k = 0; k < 3; k++){
                     auto kpos = Universe :: get_pos(n,k);
                     auto d_k = (double) grad.at(k);
@@ -319,14 +319,14 @@ namespace physics{
              * @param v Generalized velocity vector
              * @return Eigen Jd
              */
-            Eigen :: MatrixXd get_Jd(std :: vector<Eigen :: MatrixXd> &K, EVector &v){
+            Mat get_Jd(std :: vector<Mat> &K, EVector &v){
                 using namespace Eigen;
                 using namespace std;
 
                 int cnst_count = K.size();
                 int cols = v.size();
 
-                MatrixXd Jd = MatrixXd :: Zero(cnst_count,cols);
+                Mat Jd = Mat :: Zero(cnst_count,cols);
 
                 //The ith row of Jd_i is equal to 
                 // (K_i . k)^T 
