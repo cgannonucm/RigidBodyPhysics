@@ -20,7 +20,7 @@ namespace physics{
              * @return vector<long double> the interaction force between the particles.
              * 
              */
-            virtual Eigen :: Vector3d get_force(Particle p1, Particle p2) = 0;
+            virtual EVectorNd get_force(Particle p1, Particle p2) = 0;
 
             /**
              * @brief The id of first particle in two particle interaction
@@ -57,11 +57,11 @@ namespace physics{
                 interaction_series = series;
             }
 
-            Eigen :: Vector3d get_force(Particle p1, Particle p2) override{
+            EVectorNd get_force(Particle p1, Particle p2) override{
                 using namespace Eigen;
 
                 //Calculate the norm of the displacement between the particles
-                Vector3d r = p1.r - p2.r;
+                EVectorNd r = p1.r - p2.r;
                 //Issue if r_norm = 0
                 //TODO: Fix
                 auto r_norm = r.norm();

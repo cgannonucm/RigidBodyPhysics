@@ -4,6 +4,7 @@
 #include <iostream>
 #include <autodiff/reverse/var.hpp>
 #include "particle.h"
+#include <algorithm>
 
 using namespace autodiff;
 
@@ -41,10 +42,27 @@ namespace physics{
              */
             Constraint(std :: vector<int> _p_ids)
             {
+                USING_STANDARD_NAMESPACES;
+                
                 p_ids = _p_ids;
+                sort(p_ids.begin(),p_ids.end());
             }
 
-            std :: vector<int> p_ids;  
+            /**
+             * @brief Returns a vector of the particles in the interaction in assending order
+             * 
+             * @return (see description)
+             */
+            std :: vector<int> get_pids(){
+                return p_ids;
+            }
+
+            
+        
+        private: 
+
+            std :: vector<int> p_ids;
+
     };
 
 

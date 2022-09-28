@@ -3,10 +3,16 @@
 
 #include <Eigen/Eigen/Dense>
 
-#define EVector Eigen :: VectorXd
-#define EVectorNd Eigen :: Vector3d
 #define UDim 3
-typedef std :: function<EVector (EVector &, EVector &)> funcqv;
+#define USING_STANDARD_NAMESPACES using namespace Eigen; using namespace std
+typedef Eigen :: MatrixXd Mat;
+typedef Eigen :: Matrix<int, Eigen :: Dynamic, Eigen :: Dynamic> MatInt;
+
+#if UDim == 3
+    typedef Eigen :: VectorXd EVector;
+    typedef Eigen :: Vector3d EVectorNd;
+    typedef std :: function<EVector (EVector &, EVector &)> funcqv;
+#endif
 
 
 #endif

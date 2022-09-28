@@ -88,8 +88,8 @@ namespace physics{
              * @param force_to_add The forces to add
              * @param n The id of the particle
              */
-            void add_to_superpos(Eigen :: VectorXd &forces_super, Eigen :: Vector3d &force_to_add, int n){
-                for (int j = 0; j < Universe :: DIMENSION; j++){
+            void add_to_superpos(EVector &forces_super, EVectorNd &force_to_add, int n){
+                for (int j = 0; j < UDim; j++){
                     auto pos = Universe :: get_pos(n,j);
                     forces_super(Universe :: get_pos(n,j)) += force_to_add[j];
                 }
@@ -104,7 +104,7 @@ namespace physics{
              * @param forces_super The vector to add the forces to
              */
             void superposition_force_p(std :: vector<Force *> &forces, Particle &p1,
-                int n, Eigen :: VectorXd &forces_super){
+                int n, EVector &forces_super){
                 //Loop through forces and each interaction force
                 for (Force *f : forces){
                     //Evaluate force and add it's components to our force vector
@@ -146,14 +146,14 @@ namespace physics{
              * @brief Gets a superposition of all non constraint forces and interactions
              * 
              * @param universe 
-             * @return Vector3d<long double> 
+             * @return  
              */
             EVector superposition_force(EVector &q, EVector &v, EVector &m, std :: vector<Force *> &forces,
                 std :: vector<std :: vector<Interaction *>> &interactions, int p_count){
                     
                 using namespace Eigen;
 
-                VectorXd forces_super = VectorXd :: Zero(Universe :: DIMENSION * p_count);
+                VectorXd forces_super = VectorXd :: Zero(UDim * p_count);
 
                 //Loop through all particles in universe evaluate interactions and forces for all particles
                 //And add to superposition-
@@ -183,19 +183,17 @@ namespace physics{
              * @param universe
              * @return Eigen 
              */
-            Eigen :: VectorXd expand_m_vector(Universe &u){
+            EVector expand_m_vector(Universe &u){
                 using namespace Eigen;
 
                 auto p_count = u.get_p_count();
 
-                int dim = Universe :: DIMENSION * p_count;
-
                 auto m_small = u.get_m();
 
-                VectorXd m_large = VectorXd :: Zero(dim);
+                VectorXd m_large = VectorXd :: Zero(UDim);
 
                 for (int n = 0; n < p_count; n++){
-                    for (int j = 0; j < Universe :: DIMENSION;  j++){
+                    for (int j = 0; j < UDim;  j++){
                         m_large(Universe :: get_pos(n,j)) = m_small(n);
                     }
                 }

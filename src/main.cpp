@@ -4,17 +4,17 @@
 #include "evolution.h"
 #include "constraint_solver.h"
 #include "logger.h"
+#include "varvector.h"
 
 
 int main()
 {
-    using namespace std;
+    USING_STANDARD_NAMESPACES;
     using namespace physics;
-    using namespace Eigen; 
 
     Universe u(3);
 
-    double dt = 0.01;
+    double dt = 0.001;
 
     Particle p1;
     p1.r = Vector3d(1,0,0);
@@ -55,13 +55,14 @@ int main()
 
     //solver.evolve_step(u,dt);
 
-    DefaultLogger logger(u);
+    double logtstep = 1.0/60.0;
+    DefaultLogger logger(u,logtstep);
     solver.loggers.push_back(&logger);
 
     //u.add_interaction(&spring_force,0,1);
 
 
-    for (int i = 0; i < 5000; i++){
+    for (int i = 0; i < 50000; i++){
         solver.evolve_step(u,dt);
     }
 

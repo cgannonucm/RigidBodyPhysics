@@ -16,7 +16,7 @@ namespace physics{
              * @param u The Universe
              * @return Eigen Constraint forces acting on particles
              */
-            Eigen :: VectorXd solve(const EVector &q, const EVector &v,const EVector &m,
+            EVector solve(const EVector &q, const EVector &v,const EVector &m,
              std :: vector<Constraint *> &cnst, const EVector &F_ex){
                 using namespace Eigen;
                 //TODO implement options for solving
@@ -53,11 +53,11 @@ namespace physics{
              * @param u Universe to get 
              * @return Eigen 
              */
-            static Eigen :: MatrixXd get_M_inv(Eigen :: VectorXd mv){
+            static Eigen :: MatrixXd get_M_inv(EVector mv){
                 using namespace Eigen;
 
                 int n = mv.size();
-                int dim = Universe :: DIMENSION * n;
+                int dim = UDim * n;
 
                 MatrixXd MInv = MatrixXd :: Zero(dim,dim);
 
@@ -66,7 +66,7 @@ namespace physics{
                 for (int i = 0; i < n; i++){
                     double m = mv(i);
 
-                    for (int k = 0; k < Universe :: DIMENSION; k++){
+                    for (int k = 0; k < UDim; k++){
                         int j = Universe :: get_pos(i,k);
                         MInv(j,j) = 1/m;
                     }
@@ -98,46 +98,59 @@ namespace physics{
 
                 MatrixXd J = MatrixXd :: Zero(rows,cols);
                 
-                //Auxilary matricies K_j, used to calculate Jd
-                //K is nonstandard naming convention because I don't know what
-                //it is actually called
-                vector<MatrixXd> K = init_Kmats(rows,cols);
+                //Auxilary matricies H_j, used to calculate Jd
+                //H is the Hessian Tensor of C
+                vector<MatrixXd> H = init_Kmats(rows,cols);
 
                 vector<var> qvar = get_qvar(q);
 
                 vector<var> c_eval = eval_constraints(constraints,qvar);
 
-                //Calculate J matrix and K matricies
+                //Calculate J matrix and H matricies
                 //J = (partial_j(C_i))_ij
-                //K_j = (partial_i(partial_k(C_j)))_ik
+                //H_j = (partial_i(partial_k(C_j)))_ik
                 for (int i = 0; i < cnst_count; i++){
                     var *c = &c_eval.at(i);
 
-                    auto p_ids = constraints.at(i)->p_ids;
+                    auto p_ids = constraints.at(i)->get_pids();
                     
                     //Only need to take take derivatives with respect to the coordinates passed to C_i
                     for (int n : p_ids){
                         
-                        auto grad = grad_j(n,c,qvar);
+                        auto grad = grad_jx(n,c,qvar);
                         add_grad_to_mat(i,n,grad,&J);
 
-                        //Calculate K matrix
+                        //Calculate H matrix
                         //We need to calculate second partial derivatives
                         //Todo since partial_i(partial_j(C)) =  partial_j(partial_i(C))
-                        //IE K is symetric
+                        //IE H is symetric
                         //we can optimize by elimating these redundant calculations
+                        
 
-                        for (int m = 0; m < Universe :: DIMENSION; m++){
+                        for (int m = 0; m < UDim; m++){
                             for (int n2 : p_ids){
-                                int j = Universe :: DIMENSION * n + m;
+                                int j = UDim * n + m;
+
+                                //Ignore redundant calculations
+                                if(n2 > n)
+                                    break;
+
                                 auto grad2 = grad_j(n2,&grad.at(m),qvar);
-                                add_grad_to_mat(j,n2,grad2,&K.at(i));
+
+                                for(int l = 0; l < UDim; l++){
+                                    int k = Universe :: get_pos(n2,l);
+                                    //Using the fact H_ijk = H_ikj
+                                    auto grad2_l = grad2.at(l);
+
+                                    H.at(i)(j,k) = grad2_l;
+                                    H.at(i)(k,j) = grad2_l; 
+                                }
                             }                 
                         }
                     }
                 }
 
-                MatrixXd Jd = get_Jd(K,v);
+                MatrixXd Jd = get_Jd(H,v);
 
                 //cout << J << endl;
                 //cout << Jd << endl; 
@@ -154,8 +167,7 @@ namespace physics{
              * @return std (see description)
              */
             std :: vector<Eigen :: MatrixXd> init_Kmats(int mcount, int dim){
-                using namespace std;
-                using namespace Eigen;
+                USING_STANDARD_NAMESPACES;
 
                 vector<MatrixXd> K;
                 K.resize(mcount);
@@ -167,14 +179,13 @@ namespace physics{
                 return K;
             }
 
-
             /**
              * @brief Convert from VectorXd q to vector<var> qvar to prepare for diferentiation
              * 
              * @param q Generalized position variable
              * @return std (see description)
              */
-            std :: vector<autodiff :: var> get_qvar(Eigen :: VectorXd &q){
+            std :: vector<autodiff :: var> get_qvar(EVector &q){
                 using namespace :: std;
 
                 auto cols = q.size();
@@ -212,12 +223,12 @@ namespace physics{
 
                     //Only pass requested coordintates 
                     vector<vector<var *>> qcnst;
-                    for (int pid : cnst->p_ids){
+                    for (int pid : cnst->get_pids()){
                         
                         vector<var *> q_pid;
-                        q_pid.resize(Universe :: DIMENSION);
+                        q_pid.resize(UDim);
 
-                        for (int j = 0; j < Universe :: DIMENSION; j++)
+                        for (int j = 0; j < UDim; j++)
                             q_pid[j] = &qvar.at(Universe :: get_pos(pid,j));
 
                         qcnst.push_back(q_pid);
@@ -231,14 +242,14 @@ namespace physics{
 
 
             /**
-             * @brief Takes gradient of f(q) with respect to r_j
+             * @brief Takes gradient of f(q) with respect to r_j, returns a variable that can be diferentiated again
              *  
              * @param j (see description)
              * @param f (see description)
              * @param qvar (see description)
              * @return std array of components of gradient
              */
-            std :: array<autodiff :: var,3> grad_j(int j, autodiff :: var *f, std :: vector<var> &qvar){
+            std :: array<autodiff :: var,3> grad_jx(int j, autodiff :: var *f, std :: vector<var> &qvar){
                 using namespace autodiff;
 
                 //Can't loop here because of the way wrt() is written
@@ -255,6 +266,33 @@ namespace physics{
 
                 return d;
             }
+
+            /**
+             * @brief Takes gradient of f(q) with respect to r_j. Returns a double that cannot be differentiated again
+             *  
+             * @param j (see description)
+             * @param f (see description)
+             * @param qvar (see description)
+             * @return std array of components of gradient
+             */
+            std :: array<double,3> grad_j(int j, autodiff :: var *f, std :: vector<var> &qvar){
+                using namespace autodiff;
+
+                //Can't loop here because of the way wrt() is written
+
+                int xpos = Universe :: get_pos(j,0);
+                int ypos = Universe :: get_pos(j,1);
+                int zpos = Universe :: get_pos(j,2);
+
+                var *x = &qvar.at(xpos);
+                var *y = &qvar.at(ypos);
+                var *z = &qvar.at(zpos);
+                
+                auto d = derivatives(*f,wrt(*x,*y,*z));
+
+                return d;
+            }
+
 
             /**
              * @brief Sets M(i,Dimension * j + 0) = grad(0), M(i,Dimension * j + 1) = grad(1), M(i,Dimension * j + 1) = grad(2)
@@ -281,7 +319,7 @@ namespace physics{
              * @param v Generalized velocity vector
              * @return Eigen Jd
              */
-            Eigen :: MatrixXd get_Jd(std :: vector<Eigen :: MatrixXd> &K, Eigen :: VectorXd &v){
+            Eigen :: MatrixXd get_Jd(std :: vector<Eigen :: MatrixXd> &K, EVector &v){
                 using namespace Eigen;
                 using namespace std;
 

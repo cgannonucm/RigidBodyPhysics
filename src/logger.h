@@ -61,6 +61,7 @@ namespace physics{
             }
     };
 
+    //Come back and fix ugly code
     class DefaultLogger : public Logger{
 
         public:
@@ -71,15 +72,26 @@ namespace physics{
 
             const std :: array<std :: string,3> COORDNAMES = {XNAME,YNAME,ZNAME};
 
-
             DefaultLogger(Universe &u){
                 init_colnames(u);
             }
 
+
+            DefaultLogger(Universe &u, double _tstep){
+                init_colnames(u);
+                timestep = _tstep;
+            }
+
             void log(Universe &u) override{
+                //Only record at the requested time intervals
+                if(u.clock < nextstep)
+                    return;
+
                 qdat.push_back(u.get_q());
                 vdat.push_back(u.get_v());
                 tdat.push_back(u.clock);
+                
+                nextstep += timestep;
             }
 
             std :: vector<std :: vector<double>> get_dat() override{
@@ -144,6 +156,9 @@ namespace physics{
                     }
                 }
             }
+
+            double nextstep = 0;
+            double timestep = 0;
 
             std :: list<EVector> qdat;
             std :: list<EVector> vdat;

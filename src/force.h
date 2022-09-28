@@ -16,9 +16,9 @@ namespace physics{
              * @brief Get force applied on given particle
              * 
              * @param p The particle the force is being applied to
-             * @return Vector3d The force applied to given particle
+             * @return EVectorNd The force applied to given particle
              */
-            virtual Eigen :: Vector3d get_force(Particle p) = 0;
+            virtual EVectorNd get_force(Particle p) = 0;
     };
 
     /**
@@ -39,14 +39,14 @@ namespace physics{
              * @brief The direction of the gravitational force
              * 
              */
-            Eigen :: Vector3d acel;
+            EVectorNd acel;
 
             /**
              * @brief Construct a gravitational force with a aceleration vector
              * 
              * @param dir 
              */
-            ForceGravity(Eigen :: Vector3d aceleration){
+            ForceGravity(EVectorNd aceleration){
                 acel = aceleration;
             }
 
@@ -55,12 +55,17 @@ namespace physics{
              * 
              */
             ForceGravity(){
-                Eigen :: Vector3d a(0,0, - MAG_EARTH);
+                #if UDim == 3
+                EVectorNd a(0,0, - MAG_EARTH);
+                #endif
+                #if UDim == 2
+                EVectorNd a(0,- MAG_EARTH);
+                #endif
                 acel = a;
             }   
 
 
-            Eigen :: Vector3d get_force(Particle p) override{
+            EVectorNd get_force(Particle p) override{
                 //Fg_i = m * g where g is the magnitude of acelleration
                 //And i is the direction of the force
                 //Force is 0 in all but this direction

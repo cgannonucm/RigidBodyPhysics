@@ -26,7 +26,7 @@ namespace physics
             
             double clock = 0;
 
-            static const int DIMENSION = 3;
+            //static const int DIMENSION = 3;
 
             Universe(int n){
                 init(n);
@@ -40,13 +40,13 @@ namespace physics
              * @param _v The velocity vector
              * @param _m The mass of the particle
              */
-            void set_particle(Eigen :: Vector3d _r, Eigen :: Vector3d _v, double _m, int n){
+            void set_particle(EVectorNd _r, EVectorNd _v, double _m, int n){
                 assert(n < p_count && n >= 0);
 
                 //Store each position / velocity as an entry in the q and v vector
-                for (int i = 0; i < DIMENSION; i++){
-                    q(DIMENSION * n + i) = _r[i];
-                    v(DIMENSION * n + i) = _v[i];
+                for (int i = 0; i < UDim; i++){
+                    q(UDim * n + i) = _r[i];
+                    v(UDim * n + i) = _v[i];
                 }
 
                 m(n) = _m;
@@ -81,9 +81,9 @@ namespace physics
              * 
              * @param pid The particle id to get coordinates of
              * 
-             * @return Vector3d The r coordinates
+             * @return EVectorNd The r coordinates
              */
-            Eigen :: Vector3d get_p_r(int pid){
+            EVectorNd get_p_r(int pid){
                 return Universe :: get_p_r(pid,q);
             }
             
@@ -101,9 +101,9 @@ namespace physics
              * 
              * @param pid The particle id to get the v coordinates of
              * 
-             * @return Vector3d The v coordinates
+             * @return EVectorNd The v coordinates
              */
-            Eigen :: Vector3d get_p_v(int pid){
+            EVectorNd get_p_v(int pid){
                 return Universe :: get_p_v(pid,v);
             }
 
@@ -230,7 +230,7 @@ namespace physics
              * 
              * @return q vector
              */
-            Eigen :: VectorXd get_q(){
+            EVector get_q(){
                 return q;
             }
 
@@ -241,7 +241,7 @@ namespace physics
              * 
              * @return v vector
              */
-            Eigen :: VectorXd get_v(){
+            EVector get_v(){
                 return v;
             }
 
@@ -252,7 +252,7 @@ namespace physics
              * 
              * @return Eigen 
              */
-            Eigen :: VectorXd get_m(){
+            EVector get_m(){
                 return m;
             }
 
@@ -262,8 +262,8 @@ namespace physics
              * 
              * @param _q The vector to set q to
              */
-            void set_q(Eigen :: VectorXd _q){
-                assert(_q.size() == DIMENSION * p_count);
+            void set_q(EVector _q){
+                assert(_q.size() == UDim * p_count);
                 q = _q;
             }
 
@@ -273,8 +273,8 @@ namespace physics
              * 
              * @param _v The vector to set v to
              */
-            void set_v(Eigen :: VectorXd _v){
-                assert(_v.size() == DIMENSION * p_count);
+            void set_v(EVector _v){
+                assert(_v.size() == UDim * p_count);
                 v = _v;
             }
 
@@ -314,8 +314,8 @@ namespace physics
                 p_count = n;
                 using namespace Eigen;
 
-                q = VectorXd :: Zero(DIMENSION * n);
-                v = VectorXd :: Zero(DIMENSION * n);
+                q = VectorXd :: Zero(UDim * n);
+                v = VectorXd :: Zero(UDim * n);
                 m = VectorXd :: Ones(n);
 
                 //The size of the interactions vector is exactly one
@@ -351,7 +351,7 @@ namespace physics
              * positions stored as (x1,y1,z1,...,xn,yn,zn)
              * 
              */
-            Eigen :: VectorXd q;
+            EVector q;
 
             /**
              * @brief Vector containing the velocities of all particles in the universe.
@@ -359,7 +359,7 @@ namespace physics
              * velocities stored as (v_x1,v_y1,v_z1,...,v_xn,v_yn,v_zn)
              * 
              */
-            Eigen :: VectorXd v;
+            EVector v;
 
             /**
              * @brief Vector containing the masses of all particles in the universe.
@@ -367,7 +367,7 @@ namespace physics
              * masses stored as (m1, m2, ... mn)
              * 
              */
-            Eigen :: VectorXd m;
+            EVector m;
 
             /**
              * @brief Construct a 3D universe containing n particles.
