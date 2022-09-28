@@ -4,11 +4,16 @@
 #include "universe.h"
 #include "constraint.h"
 #include <Eigen/Eigen/Dense>
+#include <Eigen/Eigen/SparseCore>
+#include <Eigen/Eigen/SparseCholesky>
 
 namespace physics{
 
     class ConstraintSolver{ 
         public:
+        
+
+
         /**
              * @brief Solves for the constraint forces acting on the particles in the universe
              * 
@@ -38,7 +43,18 @@ namespace physics{
                 VectorXd B = -(Jd * v) - (J * M_inv * F_ex);
 
                 //Solve
+                #if !SPARSESOLVE
                 VectorXd x = A.colPivHouseholderQr().solve(B);
+                #endif
+
+                #if SPARSESOLVE
+                Eigen :: SimplicialLLT<Eigen :: SparseMatrix<double>> solver;
+                
+                auto S = A.sparseView();
+                            solver.compute(S);
+                                
+                EVector x = solver.solve(B);
+                #endif
 
                 //Convert to constraint force
                 VectorXd F_c = Jt * x;

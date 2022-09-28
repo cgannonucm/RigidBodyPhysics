@@ -5,6 +5,7 @@
 
 #define UDim 3
 #define USING_STANDARD_NAMESPACES using namespace Eigen; using namespace std
+#define SPARSESOLVE false
 typedef Eigen :: MatrixXd Mat;
 typedef Eigen :: Matrix<int, Eigen :: Dynamic, Eigen :: Dynamic> MatInt;
 
