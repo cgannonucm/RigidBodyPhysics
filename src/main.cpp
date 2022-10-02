@@ -69,7 +69,7 @@ int main()
     string logout = logger.get_csv_output();
 
     ofstream outfile;
-    outfile.open("pendulum3.csv");
+    outfile.open("out/pendulum3.csv");
     outfile << logout;
     outfile.close();
 

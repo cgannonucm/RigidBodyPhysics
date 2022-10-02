@@ -55,7 +55,6 @@ namespace physics{
 
             EVector get_forces(EVector &q, EVector &v,Universe &u){
                 using namespace Eigen;
-                typedef std::chrono::high_resolution_clock Clock;
 
                 auto mv = u.get_m();
                 auto forces = u.get_forces();
@@ -103,7 +102,7 @@ namespace physics{
              * @param n The particle id
              * @param forces_super The vector to add the forces to
              */
-            void superposition_force_p(std :: vector<Force *> &forces, Particle &p1,
+            void superposition_force_p(vForces &forces, Particle &p1,
                 int n, EVector &forces_super){
                 //Loop through forces and each interaction force
                 for (Force *f : forces){
@@ -124,7 +123,7 @@ namespace physics{
              *
              */
             void superposition_interaction_p(EVector &q, EVector &v, EVector &m,
-                Particle &p, std :: vector<std :: vector<Interaction *>> const &interactions_all, EVector &forces_super)
+                Particle &p, v2Interactions const &interactions_all, EVector &forces_super)
             {
                 int pid = p.id;
 
@@ -148,8 +147,8 @@ namespace physics{
              * @param universe 
              * @return  
              */
-            EVector superposition_force(EVector &q, EVector &v, EVector &m, std :: vector<Force *> &forces,
-                std :: vector<std :: vector<Interaction *>> &interactions, int p_count){
+            EVector superposition_force(EVector &q, EVector &v, EVector &m, vForces &forces,
+               v2Interactions &interactions, int p_count){
                     
                 using namespace Eigen;
 

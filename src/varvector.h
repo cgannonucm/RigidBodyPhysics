@@ -6,7 +6,7 @@
 
 namespace physics{
 
-    class VarVector3D{
+    class VarVectorND{
 
         //Come back to this
         
@@ -14,7 +14,7 @@ namespace physics{
 
         public:
         
-            VarVector3D(autodiff :: var *x, autodiff :: var *y, autodiff :: var *z){
+            VarVectorND(autodiff :: var *x, autodiff :: var *y, autodiff :: var *z){
                 r = {x,y,z};
             }
 

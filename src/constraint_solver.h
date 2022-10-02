@@ -22,7 +22,7 @@ namespace physics{
              * @return Eigen Constraint forces acting on particles
              */
             EVector solve(const EVector &q, const EVector &v,const EVector &m,
-             std :: vector<Constraint *> &cnst, const EVector &F_ex){
+            vConstraints &cnst, const EVector &F_ex){
                 using namespace Eigen;
                 //TODO implement options for solving
                 //Solve J * M ^-1 * J^T * x = -Jd * v - J * M^-1 * F_ex
@@ -103,8 +103,7 @@ namespace physics{
              * @returns {J,Jd}
              */
             std :: array<Mat,2> get_JJd(EVector q, EVector v, std :: vector<Constraint *> constraints){
-                using namespace std;
-                using namespace Eigen;
+                USING_STANDARD_NAMESPACES;
                 using namespace autodiff;
                 
                 int cnst_count = constraints.size();
@@ -225,8 +224,7 @@ namespace physics{
              * @return std The evaluated constraints
              */
             std :: vector<autodiff :: var> eval_constraints(std :: vector<Constraint *> &constraints, std :: vector<var> &qvar){
-                using namespace std;
-                using namespace Eigen;
+                USING_STANDARD_NAMESPACES;
                 using namespace autodiff;
                 
                 auto cnst_count = constraints.size();
@@ -336,8 +334,7 @@ namespace physics{
              * @return Eigen Jd
              */
             Mat get_Jd(std :: vector<Mat> &K, EVector &v){
-                using namespace Eigen;
-                using namespace std;
+                USING_STANDARD_NAMESPACES;
 
                 int cnst_count = K.size();
                 int cols = v.size();

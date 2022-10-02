@@ -6,6 +6,7 @@
 #include "interaction.h"
 #include "constraint.h"
 #include "macros.h"
+#include "uforces.h"
 
 
 namespace physics
@@ -134,7 +135,7 @@ namespace physics
              * @param force The force to add
              */
             void add_force(Force *force){
-                forces.push_back(force); 
+                uforces.forces.push_back(force); 
             }
 
 
@@ -143,8 +144,8 @@ namespace physics
              * 
              * @return vector<Force *> Forces in the universe
              */
-            std :: vector<Force *> get_forces(){
-                return forces;
+            vForces get_forces(){
+                return uforces.forces;
             }
 
             /**
@@ -160,8 +161,8 @@ namespace physics
                 i->pid2 = pid2;
 
                 //Assign this interaction to both particle
-                interactions.at(pid1).push_back(i);
-                interactions.at(pid2).push_back(i);
+                uforces.interactions.at(pid1).push_back(i);
+                uforces.interactions.at(pid2).push_back(i);
             }
 
             /**
@@ -170,15 +171,15 @@ namespace physics
              * @return Interactions in the universe
              * 
              */
-            std :: vector<std :: vector<Interaction *>> get_interactions(){
-                return interactions;
+            v2Interactions get_interactions(){
+                return uforces.interactions;
             }
 
-            std :: vector<Interaction *> get_p_interactions(int pid){
-                return get_p_interactions(pid,interactions);
+            vInteractions get_p_interactions(int pid){
+                return get_p_interactions(pid,uforces.interactions);
             }
 
-            static std :: vector<Interaction *> get_p_interactions(int pid, std :: vector<std :: vector<Interaction *>> _interactions){
+            static vInteractions get_p_interactions(int pid, std :: vector<std :: vector<Interaction *>> _interactions){
                 return _interactions.at(pid);
             }
 
@@ -190,7 +191,7 @@ namespace physics
             void add_constraint(Constraint * constraint)
             {
                 //TODO Check to make sure universe is not overconstrained
-                constraints.push_back(constraint); 
+                uforces.constraints.push_back(constraint); 
             }
 
             /**
@@ -198,9 +199,9 @@ namespace physics
              * 
              * @return vector<Constraint *> The constraints in the universe.
              */
-            std :: vector<Constraint *> get_constraints()
+            vConstraints get_constraints()
             {
-                return constraints;
+                return uforces.constraints;
             }
 
 
@@ -289,6 +290,13 @@ namespace physics
 
 
             /**
+             * @brief Gets the forces, interactions and constraints in the universe.
+            */
+            UForces get_uforces(){
+                return uforces;
+            }
+
+            /**
              * @brief Returns the position in the q / v vector of the specified particle / coordinate
              * 
              * @param n The particle id
@@ -319,31 +327,13 @@ namespace physics
                 m = VectorXd :: Ones(n);
 
                 //The size of the interactions vector is exactly one
-                interactions.resize(n);
+                uforces.interactions.resize(n);
             }
 
-
             /**
-             * @brief Forces that act on all particles in the universe.
-             * Forces are in no particular order.
-             * 
-             */
-            std :: vector<Force *> forces;
-
-            /**
-             * @brief Interactions that act on two particles in the universe.
-             * Interactions are in the same order as particles. 
-             * IE ordered like ((I12, I13, I34,...), ...)
-             * 
-             */
-            std :: vector<std :: vector<Interaction *>> interactions;
-
-            /**
-             * @brief Constraints acting on particles in the universe.
-             * Constraints are in no particular order.
-             * 
-             */
-            std :: vector<Constraint *> constraints;
+             * Stores information about forces, interactions and constraints.
+            */
+            UForces uforces;
 
             /**
              * @brief Vector containing the positions of all particles in the universe.

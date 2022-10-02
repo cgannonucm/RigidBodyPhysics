@@ -2,7 +2,7 @@
 #define FORCE_H
 
 #include <Eigen/Eigen/Dense>
-#include <particle.h>
+#include "particle.h"
 
 namespace physics{
     
