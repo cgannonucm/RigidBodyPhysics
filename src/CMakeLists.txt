@@ -9,3 +9,11 @@ add_subdirectory(core)
 target_link_directories(main.exe PUBLIC core/)
 
 target_link_libraries(main.exe core)
+
+#add_subdirectory(dependencies/autodiff)
+#
+#target_link_directories(main.exe PUBLIC dependencies/autodiff/)
+#
+#target_link_libraries(main.exe autodiff)
+#
+#target_link_libraries(core autodiff)
