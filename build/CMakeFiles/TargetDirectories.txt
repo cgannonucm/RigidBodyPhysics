@@ -1,6 +1,0 @@
-/home/greyhoundwsl/Projects/RigidBodyPhysics/build/CMakeFiles/main.exe.dir
-/home/greyhoundwsl/Projects/RigidBodyPhysics/build/CMakeFiles/edit_cache.dir
-/home/greyhoundwsl/Projects/RigidBodyPhysics/build/CMakeFiles/rebuild_cache.dir
-/home/greyhoundwsl/Projects/RigidBodyPhysics/build/core/CMakeFiles/core.dir
-/home/greyhoundwsl/Projects/RigidBodyPhysics/build/core/CMakeFiles/edit_cache.dir
-/home/greyhoundwsl/Projects/RigidBodyPhysics/build/core/CMakeFiles/rebuild_cache.dir

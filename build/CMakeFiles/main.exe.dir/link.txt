@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/main.exe.dir/main.cpp.o -o main.exe   -L/home/greyhoundwsl/Projects/RigidBodyPhysics/src/core  -Wl,-rpath,/home/greyhoundwsl/Projects/RigidBodyPhysics/src/core core/libcore.a 

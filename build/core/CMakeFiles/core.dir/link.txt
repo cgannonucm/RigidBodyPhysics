@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcore.a CMakeFiles/core.dir/force.cpp.o CMakeFiles/core.dir/constraint.cpp.o CMakeFiles/core.dir/interaction.cpp.o CMakeFiles/core.dir/series.cpp.o CMakeFiles/core.dir/ndsolve.cpp.o CMakeFiles/core.dir/csolver.cpp.o CMakeFiles/core.dir/evolution.cpp.o CMakeFiles/core.dir/logger.cpp.o CMakeFiles/core.dir/universe.cpp.o
-/usr/bin/ranlib libcore.a
