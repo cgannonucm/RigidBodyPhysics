@@ -10,8 +10,10 @@ target_link_directories(main.exe PUBLIC core/)
 
 target_link_libraries(main.exe core)
 
-#add_subdirectory(dependencies/autodiff)
-#
+add_subdirectory(extern/Eigen)
+
+add_subdirectory(extern/autodiff)
+
 #target_link_directories(main.exe PUBLIC dependencies/autodiff/)
 #
 #target_link_libraries(main.exe autodiff)
