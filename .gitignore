@@ -49,6 +49,8 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+#Ignore build directory
+
 build 
 
 [Bb][Uu][Ii][Ll][Dd]
