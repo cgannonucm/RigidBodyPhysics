@@ -1,0 +1,1 @@
+add_library(core force.cpp constraint.cpp interaction.cpp series.cpp ndsolve.cpp csolver.cpp evolution.cpp logger.cpp universe.cpp)

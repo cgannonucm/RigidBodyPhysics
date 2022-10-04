@@ -1,11 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include "universe.h"
-#include "evolution.h"
-#include "constraint_solver.h"
-#include "logger.h"
-#include "varvector.h"
-
+#include "core/universe.hpp"
+#include "core/evolution.hpp"
+#include "core/csolver.hpp"
+#include "core/logger.hpp"
 
 int main()
 {
@@ -44,14 +42,14 @@ int main()
     u.add_particle(p3);
 
     ConstraintPivot1P cnst(p1,2,0);
-    ConstraintPivot2p cnst2(p1,p2,0,1);
-    ConstraintPivot2p cnst3(p2,p3,1,2);
+    ConstraintPivot2P cnst2(p1,p2,0,1);
+    ConstraintPivot2P cnst3(p2,p3,1,2);
 
     u.add_constraint(&cnst);
     u.add_constraint(&cnst2);
     u.add_constraint(&cnst3);
 
-    UniverseSolver solver;
+    UEvolver solver;
 
     //solver.evolve_step(u,dt);
 
@@ -83,78 +81,3 @@ int main()
 
     return 0;
 }
- 
-
-/*int main() {
-
-    ConstraintSolver solver;
-
-    Particle p1;
-    p1.m = 1;
-    p1.r = *new Vector3d(1,1,1);
-    p1.v = *new Vector3d(0,0,0);
-
-    Universe u;
-
-    vector<Vector3d> dummy_force = {* new Vector3d(0,0,0)}; 
-
-    u.add_particle(&p1);
-
-    ConstraintPivot1P pc1(&p1,2);
-    
-    u.add_constraint(&pc1);
-
-    solver.solve(dummy_force,u);
-
-
-    return 0;
-};*/
-
-/*
-int main() {
-    
-    Universe u;
-    ForceGravity fg;
-
-    SpringSeries spring_series(5,1);
-    InteractionSeries spring1(&spring_series);
-    InteractionSeries spring2(&spring_series);
-    
-
-    Particle p1;
-    p1.m = 1;
-    p1.r = *new Vector3d(0,0,0);
-    p1.v = *new Vector3d(0,0,0);
-
-    Particle p2;
-    p2.m = 1;
-    p2.r = *new Vector3d(0,0,0.5);
-    p2.v = *new Vector3d(0,0,0);
-
-    Particle p3;
-    p3.m = 1;
-    p3.r = *new Vector3d(0,0,1.5);
-    p3.v = *new Vector3d(0,0,0);
-    
-
-    auto id1 = u.add_particle(&p1);
-    auto id2 = u.add_particle(&p2);
-    auto id3 = u.add_particle(&p3);
-
-    u.add_interaction(id1,id2,&spring1);
-    
-    //u.add_force(&fg);
-
-    //auto f = u.get_forces()[0];
-
-    for (int i = 0; i < 500; i++){
-        evolve_step(u,0.01);
-        //std::cout << "(" << u.clock << "," << p1.r[2] << ")" << std::endl;
-        std::cout << "(" << u.clock << "," << p2.r[2] - p1.r[2] << ")" << std::endl;
-    }
-    
-    return 0;
-};
-
-
-*/

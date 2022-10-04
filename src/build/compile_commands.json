@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/greyhoundwsl/Projects/RigidBodyPhysics/src/build",
-  "command": "/usr/bin/g++   -g -o CMakeFiles/main.exe.dir/main.cpp.o -c /home/greyhoundwsl/Projects/RigidBodyPhysics/src/main.cpp",
-  "file": "/home/greyhoundwsl/Projects/RigidBodyPhysics/src/main.cpp"
-}
-]
