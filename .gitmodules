@@ -2,9 +2,6 @@
 	path = extern/pybind11
 	url = ../../pybind/pybind11
 	branch = stable
-[submodule "src/extern/autodiff"]
-	path = src/extern/autodiff
-	url = https://github.com/autodiff/autodiff
 [submodule "src/extern/Eigen"]
 	path = src/extern/Eigen
 	url = https://gitlab.com/libeigen/eigen.git
