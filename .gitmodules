@@ -5,6 +5,3 @@
 [submodule "src/extern/Eigen"]
 	path = src/extern/Eigen
 	url = https://gitlab.com/libeigen/eigen.git
-[submodule "src/extern/autodiff"]
-	path = src/extern/autodiff
-	url = https://github.com/autodiff/autodiff
