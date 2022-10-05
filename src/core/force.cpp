@@ -1,4 +1,3 @@
-#include <Eigen/Eigen/Dense>
 #include "force.hpp"
 
 

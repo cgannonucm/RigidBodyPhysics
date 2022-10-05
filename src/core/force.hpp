@@ -1,7 +1,7 @@
 #ifndef FORCE_H // include guard
 #define FORCE_H
 
-#include <Eigen/Eigen/Dense>
+#include <Eigen/Dense>
 #include "particle.hpp"
 
 namespace physics{

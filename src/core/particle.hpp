@@ -1,7 +1,7 @@
 #ifndef PARTICLE_H // include guard
 #define PARTICLE_H
 
-#include <Eigen/Eigen/Dense>
+#include <Eigen/Dense>
 #include "macros.hpp"
 
 namespace physics

@@ -1,7 +1,7 @@
 #ifndef PHYSICS_MACROS_H // include guard
 #define PHYSICS_MACROS_H
 
-#include <Eigen/Eigen/Dense>
+#include <Eigen/Dense>
 
 #define UDim 3
 #define USING_STANDARD_NAMESPACES using namespace Eigen; using namespace std

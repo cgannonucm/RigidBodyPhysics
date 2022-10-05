@@ -4,7 +4,7 @@
 #include "series.hpp"
 #include "macros.hpp"
 #include "particle.hpp"
-#include <Eigen/Eigen/Dense>
+#include <Eigen/Dense>
 
 namespace physics{
 

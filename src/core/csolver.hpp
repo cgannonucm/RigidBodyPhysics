@@ -3,9 +3,9 @@
 
 #include "universe.hpp"
 #include "constraint.hpp"
-#include <Eigen/Eigen/Dense>
-#include <Eigen/Eigen/SparseCore>
-#include <Eigen/Eigen/SparseCholesky>
+#include <Eigen/Dense>
+#include <Eigen/SparseCore>
+#include <Eigen/SparseCholesky>
 
 namespace physics{
 

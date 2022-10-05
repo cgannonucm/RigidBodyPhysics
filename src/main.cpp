@@ -1,4 +1,16 @@
 #include <iostream>
+#include <Eigen/Dense>
+#include <autodiff/forward/real.hpp>
+
+int main(){
+
+    std :: cout << "Test" << std :: endl;
+
+    return 0;
+}
+
+/*
+#include <iostream>
 #include <fstream>
 #include "core/universe.hpp"
 #include "core/evolution.hpp"
@@ -81,3 +93,4 @@ int main()
 
     return 0;
 }
+*/

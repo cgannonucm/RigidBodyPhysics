@@ -2,7 +2,7 @@
 #define CONSTRAINT_H
 
 #include <iostream>
-#include "../dependencies/autodiff/reverse/var.hpp"
+#include <autodiff/reverse/var.hpp>
 #include "particle.hpp"
 #include <algorithm>
 
